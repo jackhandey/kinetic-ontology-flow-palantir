@@ -50,16 +50,36 @@ export const listActiveAssets = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ListQuerySchema.parse(input))
   .handler(async ({ data, context }): Promise<{ items: ActiveAsset[] }> => {
     const { supabase } = context;
-    const { data: rows, error } = await supabase
-      .from("raw_asset_status")
-      .select(RAW_COLUMNS)
-      .order("ingested_at", { ascending: false })
-      .range(data.offset, data.offset + data.limit - 1);
-    if (error) throw new Error(error.message);
+    const window = data.offset + data.limit;
+    const [statusRes, fleetRes] = await Promise.all([
+      supabase
+        .from("raw_asset_status")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+      supabase
+        .from("raw_fleet_status")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+    ]);
+    if (statusRes.error) throw new Error(statusRes.error.message);
+    if (fleetRes.error) throw new Error(fleetRes.error.message);
 
-    const items = (rows as RawRow[] | null ?? [])
+    const statusItems = (statusRes.data as RawRow[] | null ?? [])
       .map(mapAssetStatusRow)
       .filter((x): x is ActiveAsset => x !== null);
+    const fleetItems = (fleetRes.data as RawRow[] | null ?? [])
+      .map(mapFleetStatusRow)
+      .filter((x): x is ActiveAsset => x !== null);
+
+    // Merge by trackingId — asset_status (telemetry) wins on conflict.
+    const byTracking = new Map<string, ActiveAsset>();
+    for (const a of fleetItems) byTracking.set(a.trackingId, a);
+    for (const a of statusItems) byTracking.set(a.trackingId, a);
+    const items = [...byTracking.values()]
+      .sort((a, b) => (b.lastTelemetryAt ?? "").localeCompare(a.lastTelemetryAt ?? ""))
+      .slice(data.offset, data.offset + data.limit);
     return { items };
   });
 
