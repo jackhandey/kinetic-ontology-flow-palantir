@@ -201,3 +201,93 @@ export const listOperators = createServerFn({ method: "POST" })
       .filter((x): x is Operator => x !== null);
     return { items };
   });
+
+// ---------------------------------------------------------------------------
+// CustomerIssue — joins raw_tickets ⨝ raw_transactions
+// ---------------------------------------------------------------------------
+
+export const listCustomerIssues = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: CustomerIssue[] }> => {
+    const { supabase } = context;
+    const window = (data.offset + data.limit) * 2; // overfetch for join coverage
+
+    const [ticketsRes, txnRes] = await Promise.all([
+      supabase
+        .from("raw_tickets")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+      supabase
+        .from("raw_transactions")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+    ]);
+    if (ticketsRes.error) throw new Error(ticketsRes.error.message);
+    if (txnRes.error) throw new Error(txnRes.error.message);
+
+    // Build txn lookup indexes
+    const byCustomer = new Map<string, LinkedTransaction[]>();
+    const byTicketRef = new Map<string, LinkedTransaction[]>();
+    for (const row of (txnRes.data as RawRow[] | null ?? [])) {
+      const mapped = mapTransactionRowToLink(row);
+      if (!mapped) continue;
+      if (mapped.customerId) {
+        const arr = byCustomer.get(mapped.customerId) ?? [];
+        arr.push(mapped.link);
+        byCustomer.set(mapped.customerId, arr);
+      }
+      if (mapped.ticketRef) {
+        const arr = byTicketRef.get(mapped.ticketRef) ?? [];
+        arr.push(mapped.link);
+        byTicketRef.set(mapped.ticketRef, arr);
+      }
+    }
+
+    const items = (ticketsRes.data as RawRow[] | null ?? [])
+      .map((r) => mapTicketRow(r, { byCustomer, byTicketRef }))
+      .filter((x): x is CustomerIssue => x !== null)
+      .slice(data.offset, data.offset + data.limit);
+    return { items };
+  });
+
+// ---------------------------------------------------------------------------
+// FinancialRisk — unified from raw_transactions + raw_fleet_status
+// ---------------------------------------------------------------------------
+
+export const listFinancialRisks = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: FinancialRisk[] }> => {
+    const { supabase } = context;
+    const window = data.offset + data.limit;
+
+    const [txnRes, fleetRes] = await Promise.all([
+      supabase
+        .from("raw_transactions")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+      supabase
+        .from("raw_fleet_status")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+    ]);
+    if (txnRes.error) throw new Error(txnRes.error.message);
+    if (fleetRes.error) throw new Error(fleetRes.error.message);
+
+    const txnRisks = (txnRes.data as RawRow[] | null ?? [])
+      .map(mapTransactionToFinancialRisk)
+      .filter((x): x is FinancialRisk => x !== null);
+    const fleetRisks = (fleetRes.data as RawRow[] | null ?? [])
+      .map(mapFleetStatusToFinancialRisk)
+      .filter((x): x is FinancialRisk => x !== null);
+
+    const items = [...txnRisks, ...fleetRisks]
+      .sort((a, b) => b.detectedAt.localeCompare(a.detectedAt))
+      .slice(data.offset, data.offset + data.limit);
+    return { items };
+  });
