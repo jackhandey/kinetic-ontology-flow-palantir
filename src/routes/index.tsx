@@ -182,7 +182,7 @@ function CommandCenter() {
             <h1 className="font-mono text-sm font-semibold uppercase tracking-[0.2em] text-zinc-100">
               Operations Command Center
             </h1>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
               Ontology Layer · Live Feed · {fmtTime(now.toISOString())}
             </p>
           </div>
@@ -240,25 +240,25 @@ function CommandCenter() {
             <Table className="text-xs">
               <TableHeader>
                 <TableRow className="border-zinc-800 hover:bg-transparent">
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Sev
                   </TableHead>
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Detected
                   </TableHead>
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Category
                   </TableHead>
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Headline
                   </TableHead>
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Asset
                   </TableHead>
-                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Exposure
                   </TableHead>
-                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-500" />
+                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-400" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -329,22 +329,22 @@ function CommandCenter() {
             <Table className="text-xs">
               <TableHeader>
                 <TableRow className="border-zinc-800 hover:bg-transparent">
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Tracking
                   </TableHead>
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Type
                   </TableHead>
-                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Status
                   </TableHead>
-                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Speed
                   </TableHead>
-                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                     Energy
                   </TableHead>
-                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-500" />
+                  <TableHead className="h-8 text-right font-mono text-[10px] uppercase tracking-widest text-zinc-400" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -425,7 +425,7 @@ function KpiCell({
 }) {
   return (
     <div className="bg-zinc-950 px-6 py-4">
-      <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+      <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
         {icon}
         {label}
       </div>
@@ -454,9 +454,9 @@ function PanelHeader({
       <div>
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-200">
           {title}
-          <span className="ml-2 text-zinc-500">[{count}]</span>
+          <span className="ml-2 text-zinc-400">[{count}]</span>
         </h2>
-        <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-600">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           {subtitle}
         </p>
       </div>
@@ -469,7 +469,7 @@ function PanelHeader({
             Live
           </span>
         ) : (
-          <span className="text-zinc-500">Idle</span>
+          <span className="text-zinc-400">Idle</span>
         )}
       </div>
     </div>
@@ -481,7 +481,7 @@ function EmptyRow({ colSpan, label }: { colSpan: number; label: string }) {
     <TableRow className="border-zinc-900/80 hover:bg-transparent">
       <TableCell
         colSpan={colSpan}
-        className="py-8 text-center font-mono text-[11px] uppercase tracking-widest text-zinc-600"
+        className="py-8 text-center font-mono text-[11px] uppercase tracking-widest text-zinc-400"
       >
         {label}
       </TableCell>
@@ -512,7 +512,7 @@ function ConfirmActionDialog({
           <DialogTitle className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-200">
             Confirm Action
           </DialogTitle>
-          <DialogDescription className="font-mono text-[11px] uppercase tracking-widest text-zinc-500">
+          <DialogDescription className="font-mono text-[11px] uppercase tracking-widest text-zinc-400">
             This dispatches a webhook to the operations endpoint. No database
             rows will be modified directly.
           </DialogDescription>
@@ -567,7 +567,7 @@ function Row({
 }) {
   return (
     <div className="grid grid-cols-[100px_1fr] items-baseline gap-3">
-      <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+      <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
         {label}
       </span>
       <span
