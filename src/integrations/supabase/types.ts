@@ -108,6 +108,36 @@ export type Database = {
           },
         ]
       }
+      raw_fleet_status: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: []
+      }
       raw_freight_orders: {
         Row: {
           id: string
@@ -298,6 +328,36 @@ export type Database = {
           },
         ]
       }
+      raw_tickets: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: []
+      }
       raw_traffic_incidents: {
         Row: {
           id: string
@@ -335,6 +395,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      raw_transactions: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: []
       }
       raw_weather_conditions: {
         Row: {
