@@ -14,6 +14,309 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_requests: {
+        Row: {
+          action_type_id: string
+          approved_at: string | null
+          approver_id: string | null
+          dispatch_response: Json | null
+          dispatched_at: string | null
+          id: string
+          organization_id: string
+          payload: Json
+          rejection_reason: string | null
+          requested_at: string
+          requested_by: string
+          status: Database["public"]["Enums"]["action_request_status"]
+          target_object_id: string
+        }
+        Insert: {
+          action_type_id: string
+          approved_at?: string | null
+          approver_id?: string | null
+          dispatch_response?: Json | null
+          dispatched_at?: string | null
+          id?: string
+          organization_id: string
+          payload?: Json
+          rejection_reason?: string | null
+          requested_at?: string
+          requested_by: string
+          status?: Database["public"]["Enums"]["action_request_status"]
+          target_object_id: string
+        }
+        Update: {
+          action_type_id?: string
+          approved_at?: string | null
+          approver_id?: string | null
+          dispatch_response?: Json | null
+          dispatched_at?: string | null
+          id?: string
+          organization_id?: string
+          payload?: Json
+          rejection_reason?: string | null
+          requested_at?: string
+          requested_by?: string
+          status?: Database["public"]["Enums"]["action_request_status"]
+          target_object_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_requests_action_type_id_fkey"
+            columns: ["action_type_id"]
+            isOneToOne: false
+            referencedRelation: "action_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      action_types: {
+        Row: {
+          api_name: string
+          created_at: string
+          description: string | null
+          display_name: string
+          enabled: boolean
+          id: string
+          organization_id: string
+          requires_approval_rule: Json | null
+          target_object_type: string
+          validation_rules: Json
+          webhook_url: string | null
+        }
+        Insert: {
+          api_name: string
+          created_at?: string
+          description?: string | null
+          display_name: string
+          enabled?: boolean
+          id?: string
+          organization_id: string
+          requires_approval_rule?: Json | null
+          target_object_type: string
+          validation_rules?: Json
+          webhook_url?: string | null
+        }
+        Update: {
+          api_name?: string
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          enabled?: boolean
+          id?: string
+          organization_id?: string
+          requires_approval_rule?: Json | null
+          target_object_type?: string
+          validation_rules?: Json
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aip_function_invocations: {
+        Row: {
+          aip_function_id: string
+          error: string | null
+          id: string
+          input: Json
+          invoked_at: string
+          invoked_by: string | null
+          latency_ms: number | null
+          model: string | null
+          organization_id: string
+          output: Json | null
+          status: Database["public"]["Enums"]["aip_invocation_status"]
+          tokens_in: number | null
+          tokens_out: number | null
+        }
+        Insert: {
+          aip_function_id: string
+          error?: string | null
+          id?: string
+          input: Json
+          invoked_at?: string
+          invoked_by?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          organization_id: string
+          output?: Json | null
+          status?: Database["public"]["Enums"]["aip_invocation_status"]
+          tokens_in?: number | null
+          tokens_out?: number | null
+        }
+        Update: {
+          aip_function_id?: string
+          error?: string | null
+          id?: string
+          input?: Json
+          invoked_at?: string
+          invoked_by?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          organization_id?: string
+          output?: Json | null
+          status?: Database["public"]["Enums"]["aip_invocation_status"]
+          tokens_in?: number | null
+          tokens_out?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aip_function_invocations_aip_function_id_fkey"
+            columns: ["aip_function_id"]
+            isOneToOne: false
+            referencedRelation: "aip_functions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aip_function_invocations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aip_functions: {
+        Row: {
+          api_name: string
+          created_at: string
+          description: string | null
+          display_name: string
+          enabled: boolean
+          id: string
+          input_schema: Json
+          model: string
+          organization_id: string
+          output_schema: Json
+          system_prompt: string
+        }
+        Insert: {
+          api_name: string
+          created_at?: string
+          description?: string | null
+          display_name: string
+          enabled?: boolean
+          id?: string
+          input_schema?: Json
+          model?: string
+          organization_id: string
+          output_schema?: Json
+          system_prompt: string
+        }
+        Update: {
+          api_name?: string
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          enabled?: boolean
+          id?: string
+          input_schema?: Json
+          model?: string
+          organization_id?: string
+          output_schema?: Json
+          system_prompt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aip_functions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classification_markings: {
+        Row: {
+          code: string
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string
+        }
+        Insert: {
+          code: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id: string
+        }
+        Update: {
+          code?: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classification_markings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      object_markings: {
+        Row: {
+          created_at: string
+          id: string
+          marking_id: string
+          object_id: string
+          object_type: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          marking_id: string
+          object_id: string
+          object_type: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          marking_id?: string
+          object_id?: string
+          object_type?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "object_markings_marking_id_fkey"
+            columns: ["marking_id"]
+            isOneToOne: false
+            referencedRelation: "classification_markings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "object_markings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ontology_alerts: {
         Row: {
           category: string
@@ -68,6 +371,182 @@ export type Database = {
         }
         Relationships: []
       }
+      ontology_link_types: {
+        Row: {
+          api_name: string
+          cardinality: Database["public"]["Enums"]["ontology_cardinality"]
+          display_name: string
+          from_object_type_id: string
+          id: string
+          organization_id: string
+          to_object_type_id: string
+        }
+        Insert: {
+          api_name: string
+          cardinality?: Database["public"]["Enums"]["ontology_cardinality"]
+          display_name: string
+          from_object_type_id: string
+          id?: string
+          organization_id: string
+          to_object_type_id: string
+        }
+        Update: {
+          api_name?: string
+          cardinality?: Database["public"]["Enums"]["ontology_cardinality"]
+          display_name?: string
+          from_object_type_id?: string
+          id?: string
+          organization_id?: string
+          to_object_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ontology_link_types_from_object_type_id_fkey"
+            columns: ["from_object_type_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_object_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ontology_link_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ontology_link_types_to_object_type_id_fkey"
+            columns: ["to_object_type_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_object_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ontology_object_links: {
+        Row: {
+          created_at: string
+          from_object_id: string
+          id: string
+          link_type_id: string
+          organization_id: string
+          to_object_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_object_id: string
+          id?: string
+          link_type_id: string
+          organization_id: string
+          to_object_id: string
+        }
+        Update: {
+          created_at?: string
+          from_object_id?: string
+          id?: string
+          link_type_id?: string
+          organization_id?: string
+          to_object_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ontology_object_links_link_type_id_fkey"
+            columns: ["link_type_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_link_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ontology_object_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ontology_object_types: {
+        Row: {
+          api_name: string
+          created_at: string
+          description: string | null
+          display_name: string
+          icon: string | null
+          id: string
+          organization_id: string
+          primary_key_field: string
+          title_field: string
+        }
+        Insert: {
+          api_name: string
+          created_at?: string
+          description?: string | null
+          display_name: string
+          icon?: string | null
+          id?: string
+          organization_id: string
+          primary_key_field?: string
+          title_field?: string
+        }
+        Update: {
+          api_name?: string
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          icon?: string | null
+          id?: string
+          organization_id?: string
+          primary_key_field?: string
+          title_field?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ontology_object_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ontology_properties: {
+        Row: {
+          api_name: string
+          data_type: Database["public"]["Enums"]["ontology_data_type"]
+          display_name: string
+          id: string
+          object_type_id: string
+          required: boolean
+          sensitivity: string | null
+        }
+        Insert: {
+          api_name: string
+          data_type: Database["public"]["Enums"]["ontology_data_type"]
+          display_name: string
+          id?: string
+          object_type_id: string
+          required?: boolean
+          sensitivity?: string | null
+        }
+        Update: {
+          api_name?: string
+          data_type?: Database["public"]["Enums"]["ontology_data_type"]
+          display_name?: string
+          id?: string
+          object_type_id?: string
+          required?: boolean
+          sensitivity?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ontology_properties_object_type_id_fkey"
+            columns: ["object_type_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_object_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -85,6 +564,113 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      pipeline_runs: {
+        Row: {
+          error: string | null
+          finished_at: string | null
+          id: string
+          log: Json
+          organization_id: string
+          pipeline_id: string
+          rows_in: number
+          rows_out: number
+          started_at: string
+          status: Database["public"]["Enums"]["pipeline_run_status"]
+          triggered_by: string | null
+        }
+        Insert: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          log?: Json
+          organization_id: string
+          pipeline_id: string
+          rows_in?: number
+          rows_out?: number
+          started_at?: string
+          status?: Database["public"]["Enums"]["pipeline_run_status"]
+          triggered_by?: string | null
+        }
+        Update: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          log?: Json
+          organization_id?: string
+          pipeline_id?: string
+          rows_in?: number
+          rows_out?: number
+          started_at?: string
+          status?: Database["public"]["Enums"]["pipeline_run_status"]
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_runs_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipelines: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          name: string
+          organization_id: string
+          schedule_cron: string | null
+          source_table: string
+          target_object_type: string
+          transform_sql: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name: string
+          organization_id: string
+          schedule_cron?: string | null
+          source_table: string
+          target_object_type: string
+          transform_sql?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name?: string
+          organization_id?: string
+          schedule_cron?: string | null
+          source_table?: string
+          target_object_type?: string
+          transform_sql?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipelines_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       raw_asset_status: {
         Row: {
@@ -518,6 +1104,48 @@ export type Database = {
           },
         ]
       }
+      user_marking_grants: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          marking_id: string
+          organization_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          marking_id: string
+          organization_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          marking_id?: string
+          organization_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_marking_grants_marking_id_fkey"
+            columns: ["marking_id"]
+            isOneToOne: false
+            referencedRelation: "classification_markings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_marking_grants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -564,9 +1192,31 @@ export type Database = {
         }
         Returns: boolean
       }
+      user_has_marking: {
+        Args: { _marking_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      action_request_status:
+        | "pending_approval"
+        | "approved"
+        | "rejected"
+        | "dispatched"
+        | "failed"
+        | "succeeded"
+      aip_invocation_status: "pending" | "succeeded" | "failed"
       app_role: "admin" | "operator" | "viewer"
+      ontology_cardinality: "one_to_one" | "one_to_many" | "many_to_many"
+      ontology_data_type:
+        | "string"
+        | "number"
+        | "bool"
+        | "datetime"
+        | "geo"
+        | "enum"
+        | "json"
+      pipeline_run_status: "pending" | "running" | "succeeded" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -694,7 +1344,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      action_request_status: [
+        "pending_approval",
+        "approved",
+        "rejected",
+        "dispatched",
+        "failed",
+        "succeeded",
+      ],
+      aip_invocation_status: ["pending", "succeeded", "failed"],
       app_role: ["admin", "operator", "viewer"],
+      ontology_cardinality: ["one_to_one", "one_to_many", "many_to_many"],
+      ontology_data_type: [
+        "string",
+        "number",
+        "bool",
+        "datetime",
+        "geo",
+        "enum",
+        "json",
+      ],
+      pipeline_run_status: ["pending", "running", "succeeded", "failed"],
     },
   },
 } as const
