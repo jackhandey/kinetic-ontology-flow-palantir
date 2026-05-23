@@ -488,3 +488,93 @@ function EmptyRow({ colSpan, label }: { colSpan: number; label: string }) {
     </TableRow>
   );
 }
+
+function ConfirmActionDialog({
+  pending,
+  isPending,
+  onCancel,
+  onConfirm,
+}: {
+  pending: PendingAction | null;
+  isPending: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog
+      open={pending !== null}
+      onOpenChange={(open) => {
+        if (!open && !isPending) onCancel();
+      }}
+    >
+      <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100 sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-200">
+            Confirm Action
+          </DialogTitle>
+          <DialogDescription className="font-mono text-[11px] uppercase tracking-widest text-zinc-500">
+            This dispatches a webhook to the operations endpoint. No database
+            rows will be modified directly.
+          </DialogDescription>
+        </DialogHeader>
+        {pending && (
+          <div className="space-y-3 border-t border-zinc-800 pt-3 text-sm">
+            <Row label="Action" value={pending.actionType} mono />
+            <Row label="Target" value={pending.title} />
+            <Row label="Context" value={pending.summary} />
+            <Row label="Object ID" value={pending.objectId} mono small />
+          </div>
+        )}
+        <DialogFooter className="mt-2 gap-2 sm:gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isPending}
+            className="border-zinc-700 bg-transparent font-mono text-[11px] uppercase tracking-widest text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={isPending}
+            className="bg-emerald-500 font-mono text-[11px] uppercase tracking-widest text-zinc-950 hover:bg-emerald-400"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-1.5 size-3 animate-spin" />
+                Dispatching…
+              </>
+            ) : (
+              "Confirm & Dispatch"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Row({
+  label,
+  value,
+  mono,
+  small,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  small?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[100px_1fr] items-baseline gap-3">
+      <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+        {label}
+      </span>
+      <span
+        className={`${mono ? "font-mono" : ""} ${small ? "text-[11px] text-zinc-400" : "text-zinc-100"} break-all`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
