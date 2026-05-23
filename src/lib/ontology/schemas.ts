@@ -161,6 +161,91 @@ export const OperatorSchema = z.object({
 export type Operator = z.infer<typeof OperatorSchema>;
 
 // ---------------------------------------------------------------------------
+// CustomerIssue — unified view of a customer-facing problem.
+// Joins raw_tickets (the complaint) with raw_transactions (the money at risk).
+// ---------------------------------------------------------------------------
+
+export const IssueStatusSchema = z.enum([
+  "open",
+  "acknowledged",
+  "in_progress",
+  "waiting_customer",
+  "resolved",
+  "closed",
+]);
+export type IssueStatus = z.infer<typeof IssueStatusSchema>;
+
+export const IssueChannelSchema = z.enum([
+  "email",
+  "phone",
+  "chat",
+  "portal",
+  "social",
+  "internal",
+  "other",
+]);
+export type IssueChannel = z.infer<typeof IssueChannelSchema>;
+
+export const LinkedTransactionSchema = z.object({
+  transactionId: z.string(),
+  amountUsd: z.number(),
+  occurredAt: z.string().datetime().nullable(),
+  kind: z.enum(["charge", "refund", "chargeback", "adjustment", "other"]),
+});
+export type LinkedTransaction = z.infer<typeof LinkedTransactionSchema>;
+
+export const CustomerIssueSchema = z.object({
+  id: z.string(),
+  ticketRef: z.string(),
+  customerId: z.string(),
+  customerName: z.string().nullable(),
+  subject: z.string(),
+  description: z.string().nullable(),
+  channel: IssueChannelSchema,
+  severity: RiskSeveritySchema,
+  status: IssueStatusSchema,
+  relatedShipmentId: z.string().nullable(),
+  linkedTransactions: z.array(LinkedTransactionSchema),
+  financialExposureUsd: z.number(),
+  openedAt: z.string().datetime(),
+  lastUpdatedAt: z.string().datetime().nullable(),
+  organizationId: z.string().uuid(),
+});
+export type CustomerIssue = z.infer<typeof CustomerIssueSchema>;
+
+// ---------------------------------------------------------------------------
+// FinancialRisk — quantified monetary exposure derived from transactions,
+// fleet status, and operational conditions.
+// ---------------------------------------------------------------------------
+
+export const FinancialRiskKindSchema = z.enum([
+  "chargeback",
+  "unpaid_invoice",
+  "fraud_suspected",
+  "cargo_loss",
+  "fleet_downtime",
+  "compliance_penalty",
+  "other",
+]);
+export type FinancialRiskKind = z.infer<typeof FinancialRiskKindSchema>;
+
+export const FinancialRiskSchema = z.object({
+  id: z.string(),
+  kind: FinancialRiskKindSchema,
+  severity: RiskSeveritySchema,
+  headline: z.string(),
+  exposureUsd: z.number().nonnegative(),
+  currency: z.string().length(3),
+  counterpartyId: z.string().nullable(),
+  relatedAssetId: z.string().nullable(),
+  relatedTransactionIds: z.array(z.string()),
+  detectedAt: z.string().datetime(),
+  resolvedAt: z.string().datetime().nullable(),
+  organizationId: z.string().uuid(),
+});
+export type FinancialRisk = z.infer<typeof FinancialRiskSchema>;
+
+// ---------------------------------------------------------------------------
 // Query input schemas
 // ---------------------------------------------------------------------------
 
