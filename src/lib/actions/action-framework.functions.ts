@@ -111,7 +111,7 @@ export const listActionRequests = createServerFn({ method: "GET" })
       .eq("organization_id", role.orgId)
       .order("requested_at", { ascending: false })
       .limit(data.limit);
-    if (data.status) q = q.eq("status", data.status);
+    if (data.status) q = q.eq("status", data.status as never);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return { requests: rows ?? [] };
