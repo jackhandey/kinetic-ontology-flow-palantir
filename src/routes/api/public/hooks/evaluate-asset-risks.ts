@@ -148,7 +148,7 @@ export const Route = createFileRoute("/api/public/hooks/evaluate-asset-risks")({
             impacted_route_ids: ev.impactedRouteIds,
             exposure_usd: ev.exposureUsd,
             evaluation_model: result.model,
-            evaluation_payload: ev as unknown as Record<string, unknown>,
+            evaluation_payload: JSON.parse(JSON.stringify(ev)),
             detected_at: new Date().toISOString(),
           });
           if (insertErr) {
