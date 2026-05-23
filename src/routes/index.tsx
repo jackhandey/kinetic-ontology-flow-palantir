@@ -301,22 +301,30 @@ function CommandCenter() {
                         {fmtUsd(a.exposureUsd)}
                       </TableCell>
                       <TableCell className="py-1.5 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-6 border-zinc-700 bg-transparent px-2 font-mono text-[10px] uppercase tracking-widest text-zinc-200 hover:bg-zinc-100 hover:text-zinc-900"
-                          onClick={() =>
-                            setPending({
-                              objectId: a.id,
-                              objectKind: "ontology_alert",
-                              actionType: "acknowledge_alert",
-                              title: a.headline,
-                              summary: `${a.severity.toUpperCase()} · ${a.category} · ${fmtUsd(a.exposureUsd)} exposure`,
-                            })
-                          }
-                        >
-                          Take Action
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          <a
+                            href={`/objects/ontology_alert/${a.id}`}
+                            className="inline-flex h-6 items-center rounded-sm border border-zinc-800 px-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                          >
+                            Explore
+                          </a>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 border-zinc-700 bg-transparent px-2 font-mono text-[10px] uppercase tracking-widest text-zinc-200 hover:bg-zinc-100 hover:text-zinc-900"
+                            onClick={() =>
+                              setPending({
+                                objectId: a.id,
+                                objectKind: "ontology_alert",
+                                actionType: "acknowledge_alert",
+                                title: a.headline,
+                                summary: `${a.severity.toUpperCase()} · ${a.category} · ${fmtUsd(a.exposureUsd)} exposure`,
+                              })
+                            }
+                          >
+                            Take Action
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
