@@ -50,7 +50,7 @@ export const listLinkTypes = createServerFn({ method: "GET" })
   });
 
 export const GetObjectLinksInput = z.object({
-  objectId: z.string().min(1).max(255),
+  objectId: z.string().min(1).max(255).regex(/^[a-zA-Z0-9_-]+$/),
 });
 
 export const getObjectLinks = createServerFn({ method: "GET" })
