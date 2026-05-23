@@ -20,8 +20,11 @@ import {
   type FinancialRisk,
   type InventoryBatch,
   type LinkedTransaction,
+  type OntologyAlert,
   type Operator,
   type RiskAlert,
+  type RiskCategory,
+  type RiskSeverity,
   type ShippingRoute,
 } from "./schemas";
 import {
@@ -289,5 +292,41 @@ export const listFinancialRisks = createServerFn({ method: "POST" })
     const items = [...txnRisks, ...fleetRisks]
       .sort((a, b) => b.detectedAt.localeCompare(a.detectedAt))
       .slice(data.offset, data.offset + data.limit);
+    return { items };
+  });
+
+// ---------------------------------------------------------------------------
+// OntologyAlert — LLM-evaluated risk alerts persisted to ontology_alerts
+// ---------------------------------------------------------------------------
+
+export const listOntologyAlerts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: OntologyAlert[] }> => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("ontology_alerts")
+      .select(
+        "id, organization_id, source_asset_id, severity, category, headline, description, impacted_asset_ids, impacted_route_ids, exposure_usd, evaluation_model, detected_at, resolved_at",
+      )
+      .order("detected_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+    if (error) throw new Error(error.message);
+
+    const items: OntologyAlert[] = (rows ?? []).map((r: Record<string, unknown>) => ({
+      id: String(r.id),
+      organizationId: String(r.organization_id),
+      sourceAssetId: String(r.source_asset_id),
+      severity: r.severity as RiskSeverity,
+      category: r.category as RiskCategory,
+      headline: String(r.headline),
+      description: r.description == null ? null : String(r.description),
+      impactedAssetIds: Array.isArray(r.impacted_asset_ids) ? (r.impacted_asset_ids as string[]) : [],
+      impactedRouteIds: Array.isArray(r.impacted_route_ids) ? (r.impacted_route_ids as string[]) : [],
+      exposureUsd: r.exposure_usd == null ? null : Number(r.exposure_usd),
+      evaluationModel: r.evaluation_model == null ? null : String(r.evaluation_model),
+      detectedAt: String(r.detected_at),
+      resolvedAt: r.resolved_at == null ? null : String(r.resolved_at),
+    }));
     return { items };
   });
