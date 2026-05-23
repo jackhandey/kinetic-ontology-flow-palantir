@@ -10,33 +10,44 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicHooksEvaluateAssetRisksRouteImport } from './routes/api/public/hooks/evaluate-asset-risks'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksEvaluateAssetRisksRoute =
+  ApiPublicHooksEvaluateAssetRisksRouteImport.update({
+    id: '/api/public/hooks/evaluate-asset-risks',
+    path: '/api/public/hooks/evaluate-asset-risks',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/public/hooks/evaluate-asset-risks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/public/hooks/evaluate-asset-risks'
+  id: '__root__' | '/' | '/api/public/hooks/evaluate-asset-risks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiPublicHooksEvaluateAssetRisksRoute: typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,12 +59,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/evaluate-asset-risks': {
+      id: '/api/public/hooks/evaluate-asset-risks'
+      path: '/api/public/hooks/evaluate-asset-risks'
+      fullPath: '/api/public/hooks/evaluate-asset-risks'
+      preLoaderRoute: typeof ApiPublicHooksEvaluateAssetRisksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiPublicHooksEvaluateAssetRisksRoute: ApiPublicHooksEvaluateAssetRisksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
