@@ -1,0 +1,175 @@
+/**
+ * Semantic Ontology Layer — Server Functions
+ *
+ * The ONLY surface the Kinetic UI is allowed to consume. Each function:
+ *   1. Authenticates the caller via requireSupabaseAuth (org-scoped Supabase client)
+ *   2. Reads from raw_* tables — RLS ensures only the caller's org rows are returned
+ *   3. Maps raw payloads → typed business objects via the .server mappers
+ *   4. Returns plain DTOs (Zod-validated) to the UI
+ *
+ * Keep this file thin: server-fn declarations + their imports only.
+ * Shared logic lives in mappers.server.ts.
+ */
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  GetByIdSchema,
+  ListQuerySchema,
+  type ActiveAsset,
+  type InventoryBatch,
+  type Operator,
+  type RiskAlert,
+  type ShippingRoute,
+} from "./schemas";
+import {
+  mapAssetStatusRow,
+  mapDriverLogRow,
+  mapInventoryBatchRow,
+  mapRoutePlanRow,
+  mapTrafficToRisk,
+  mapWeatherToRisk,
+  type RawRow,
+} from "./mappers.server";
+
+const RAW_COLUMNS = "id, organization_id, raw_payload, ingested_at, processed_at";
+
+// ---------------------------------------------------------------------------
+// ActiveAsset
+// ---------------------------------------------------------------------------
+
+export const listActiveAssets = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: ActiveAsset[] }> => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("raw_asset_status")
+      .select(RAW_COLUMNS)
+      .order("ingested_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+    if (error) throw new Error(error.message);
+
+    const items = (rows as RawRow[] | null ?? [])
+      .map(mapAssetStatusRow)
+      .filter((x): x is ActiveAsset => x !== null);
+    return { items };
+  });
+
+export const getActiveAsset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => GetByIdSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ item: ActiveAsset | null }> => {
+    const { supabase } = context;
+    const { data: row, error } = await supabase
+      .from("raw_asset_status")
+      .select(RAW_COLUMNS)
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { item: row ? mapAssetStatusRow(row as RawRow) : null };
+  });
+
+// ---------------------------------------------------------------------------
+// ShippingRoute
+// ---------------------------------------------------------------------------
+
+export const listShippingRoutes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: ShippingRoute[] }> => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("raw_route_plans")
+      .select(RAW_COLUMNS)
+      .order("ingested_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+    if (error) throw new Error(error.message);
+
+    const items = (rows as RawRow[] | null ?? [])
+      .map(mapRoutePlanRow)
+      .filter((x): x is ShippingRoute => x !== null);
+    return { items };
+  });
+
+// ---------------------------------------------------------------------------
+// InventoryBatch
+// ---------------------------------------------------------------------------
+
+export const listInventoryBatches = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: InventoryBatch[] }> => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("raw_inventory_batches")
+      .select(RAW_COLUMNS)
+      .order("ingested_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+    if (error) throw new Error(error.message);
+
+    const items = (rows as RawRow[] | null ?? [])
+      .map(mapInventoryBatchRow)
+      .filter((x): x is InventoryBatch => x !== null);
+    return { items };
+  });
+
+// ---------------------------------------------------------------------------
+// RiskAlert — fuses weather + traffic streams into a unified business object
+// ---------------------------------------------------------------------------
+
+export const listRiskAlerts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: RiskAlert[] }> => {
+    const { supabase } = context;
+    const window = data.offset + data.limit;
+
+    const [weather, traffic] = await Promise.all([
+      supabase
+        .from("raw_weather_conditions")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+      supabase
+        .from("raw_traffic_incidents")
+        .select(RAW_COLUMNS)
+        .order("ingested_at", { ascending: false })
+        .limit(window),
+    ]);
+    if (weather.error) throw new Error(weather.error.message);
+    if (traffic.error) throw new Error(traffic.error.message);
+
+    const weatherAlerts = (weather.data as RawRow[] | null ?? [])
+      .map(mapWeatherToRisk)
+      .filter((x): x is RiskAlert => x !== null);
+    const trafficAlerts = (traffic.data as RawRow[] | null ?? [])
+      .map(mapTrafficToRisk)
+      .filter((x): x is RiskAlert => x !== null);
+
+    const items = [...weatherAlerts, ...trafficAlerts]
+      .sort((a, b) => b.detectedAt.localeCompare(a.detectedAt))
+      .slice(data.offset, data.offset + data.limit);
+    return { items };
+  });
+
+// ---------------------------------------------------------------------------
+// Operator
+// ---------------------------------------------------------------------------
+
+export const listOperators = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ListQuerySchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ items: Operator[] }> => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("raw_driver_logs")
+      .select(RAW_COLUMNS)
+      .order("ingested_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+    if (error) throw new Error(error.message);
+
+    const items = (rows as RawRow[] | null ?? [])
+      .map(mapDriverLogRow)
+      .filter((x): x is Operator => x !== null);
+    return { items };
+  });
