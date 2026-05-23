@@ -1,0 +1,7 @@
+# Operations Command Center
+
+> Enterprise operations dashboard that maps raw signals to business objects in an ontology layer, surfacing live AI risk alerts and active fleet assets for rapid action dispatch.
+
+## Pages
+
+- [Operations Command Center](/): Live dashboard of ontology alerts and active assets with one-click action dispatch.
