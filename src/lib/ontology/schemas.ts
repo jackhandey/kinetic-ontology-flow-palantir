@@ -274,3 +274,24 @@ export const RiskEvaluationSchema = z.object({
   rationale: z.string().max(2000).nullable(),
 });
 export type RiskEvaluation = z.infer<typeof RiskEvaluationSchema>;
+
+// ---------------------------------------------------------------------------
+// OntologyAlert — persisted output of the LLM risk evaluator
+// ---------------------------------------------------------------------------
+
+export const OntologyAlertSchema = z.object({
+  id: z.string().uuid(),
+  sourceAssetId: z.string(),
+  severity: RiskSeveritySchema,
+  category: RiskCategorySchema,
+  headline: z.string(),
+  description: z.string().nullable(),
+  impactedAssetIds: z.array(z.string()),
+  impactedRouteIds: z.array(z.string()),
+  exposureUsd: z.number().nullable(),
+  evaluationModel: z.string().nullable(),
+  detectedAt: z.string(),
+  resolvedAt: z.string().nullable(),
+  organizationId: z.string().uuid(),
+});
+export type OntologyAlert = z.infer<typeof OntologyAlertSchema>;

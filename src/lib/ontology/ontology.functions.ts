@@ -20,8 +20,11 @@ import {
   type FinancialRisk,
   type InventoryBatch,
   type LinkedTransaction,
+  type OntologyAlert,
   type Operator,
   type RiskAlert,
+  type RiskCategory,
+  type RiskSeverity,
   type ShippingRoute,
 } from "./schemas";
 import {
