@@ -14,16 +14,415 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      raw_asset_status: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_asset_status_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_driver_logs: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_driver_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_freight_orders: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_freight_orders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_inventory_batches: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_inventory_batches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_route_plans: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_route_plans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_shipping_manifests: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_shipping_manifests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_telemetry_logs: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_telemetry_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_traffic_incidents: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_traffic_incidents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_weather_conditions: {
+        Row: {
+          id: string
+          ingested_at: string
+          organization_id: string
+          processed_at: string | null
+          processed_status: boolean
+          raw_payload: Json
+          source_system: string | null
+        }
+        Insert: {
+          id?: string
+          ingested_at?: string
+          organization_id: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload: Json
+          source_system?: string | null
+        }
+        Update: {
+          id?: string
+          ingested_at?: string
+          organization_id?: string
+          processed_at?: string | null
+          processed_status?: boolean
+          raw_payload?: Json
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raw_weather_conditions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_user_orgs: { Args: never; Returns: string[] }
+      has_role: {
+        Args: {
+          _org_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "operator" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +549,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "operator", "viewer"],
+    },
   },
 } as const
