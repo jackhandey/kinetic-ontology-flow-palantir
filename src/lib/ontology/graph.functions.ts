@@ -9,7 +9,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const GraphInput = z.object({
   objectType: z.string().min(1).max(64).regex(/^[a-z0-9_]+$/),
-  objectId: z.string().min(1).max(255),
+  objectId: z.string().min(1).max(255).regex(/^[a-zA-Z0-9_-]+$/),
   depth: z.number().int().min(1).max(2).default(1),
 });
 
