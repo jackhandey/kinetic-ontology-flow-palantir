@@ -64,7 +64,6 @@ const safeEnum = <T extends z.ZodEnum<[string, ...string[]]>>(
   return r.success ? r.data : fallback;
 };
 
-import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // ActiveAsset ← raw_asset_status (+ optional telemetry merge)
