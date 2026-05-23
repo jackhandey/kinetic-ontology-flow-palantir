@@ -7,6 +7,7 @@
  * business object returns `null` and the caller filters it out — one bad row
  * should never break the ontology.
  */
+import { z } from "zod";
 import {
   ActiveAssetSchema,
   type ActiveAsset,
