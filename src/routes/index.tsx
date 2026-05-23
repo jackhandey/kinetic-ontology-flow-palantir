@@ -116,7 +116,9 @@ function fmtUsd(n: number | null): string {
 function CommandCenter() {
   const fetchAlerts = useServerFn(listOntologyAlerts);
   const fetchAssets = useServerFn(listActiveAssets);
+  const dispatchFn = useServerFn(dispatchAction);
   const [now, setNow] = useState(() => new Date());
+  const [pending, setPending] = useState<PendingAction | null>(null);
 
   const alertsQ = useQuery({
     queryKey: ["ontology_alerts"],
@@ -127,6 +129,27 @@ function CommandCenter() {
     queryKey: ["active_assets"],
     queryFn: () => fetchAssets({ data: { limit: 100, offset: 0 } }),
     refetchInterval: 30_000,
+  });
+
+  const dispatchM = useMutation({
+    mutationFn: (input: PendingAction) =>
+      dispatchFn({
+        data: {
+          objectId: input.objectId,
+          objectKind: input.objectKind,
+          actionType: input.actionType,
+        },
+      }),
+    onSuccess: (_res, input) => {
+      toast.success("Webhook acknowledged (200 OK)", {
+        description: `${input.actionType} → ${input.title}`,
+      });
+      setPending(null);
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error("Webhook dispatch failed", { description: msg });
+    },
   });
 
   const alerts: OntologyAlert[] = alertsQ.data?.items ?? [];
