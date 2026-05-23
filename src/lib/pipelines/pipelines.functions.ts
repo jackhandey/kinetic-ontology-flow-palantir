@@ -125,8 +125,7 @@ export const runPipeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => RunPipelineInput.parse(i))
   .handler(async ({ data, context }) => {
-    const orgId = await getOrgId(context.userId);
-    if (!orgId) throw new Error("No organization");
+    const { orgId } = requireAdmin(await getOrgIdAndRole(context.userId));
 
     const { data: pipeline, error: pErr } = await supabaseAdmin
       .from("pipelines")
