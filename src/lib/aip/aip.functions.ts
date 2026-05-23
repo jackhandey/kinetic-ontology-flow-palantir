@@ -86,7 +86,7 @@ export const invokeAipFunction = createServerFn({ method: "POST" })
       .insert({
         aip_function_id: fn.id,
         organization_id: orgId,
-        input: data.input,
+        input: data.input as never,
         invoked_by: context.userId,
         model: fn.model,
       })

@@ -147,7 +147,7 @@ export const runPipeline = createServerFn({ method: "POST" })
       if (ids.length) {
         await supabaseAdmin
           .from(pipeline.source_table as never)
-          .update({ processed_status: true, processed_at: new Date().toISOString() })
+          .update({ processed_status: true, processed_at: new Date().toISOString() } as never)
           .in("id", ids);
       }
 

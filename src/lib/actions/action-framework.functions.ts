@@ -159,7 +159,7 @@ export const requestAction = createServerFn({ method: "POST" })
         action_type_id: at.id,
         organization_id: role.orgId,
         target_object_id: data.targetObjectId,
-        payload: data.payload,
+        payload: data.payload as never,
         status: needsApproval ? "pending_approval" : "approved",
         requested_by: context.userId,
         approved_at: needsApproval ? null : new Date().toISOString(),
