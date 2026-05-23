@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kinetic-ontology-flow-palantir.lovable.app/sitemap.xml
