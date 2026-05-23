@@ -36,6 +36,25 @@ async function getOrgId(userId: string): Promise<string | null> {
   return data?.organization_id ?? null;
 }
 
+async function getOrgIdAndRole(
+  userId: string,
+): Promise<{ orgId: string; role: string } | null> {
+  const { data } = await supabaseAdmin
+    .from("user_roles")
+    .select("organization_id, role")
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  return { orgId: data.organization_id, role: data.role };
+}
+
+function requireAdmin(orgData: { orgId: string; role: string } | null): { orgId: string } {
+  if (!orgData) throw new Error("No organization");
+  if (orgData.role !== "admin") throw new Error("Admin role required");
+  return { orgId: orgData.orgId };
+}
+
 export const listPipelines = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
