@@ -25,7 +25,15 @@ const CONTEXT_LIMIT = 50;
 export const Route = createFileRoute("/api/public/hooks/evaluate-asset-risks")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        // Shared-secret gate — this route uses the service role and triggers
+        // paid LLM calls, so it must not be open to the internet.
+        const expected = process.env.CRON_HOOK_SECRET;
+        const provided = request.headers.get("x-cron-secret");
+        if (!expected || !provided || provided !== expected) {
+          return new Response("Forbidden", { status: 403 });
+        }
+
         const since = new Date(Date.now() - LOOKBACK_MINUTES * 60_000).toISOString();
         const summary = {
           assetsConsidered: 0,
