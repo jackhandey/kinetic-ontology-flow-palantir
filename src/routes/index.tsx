@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Radio, RefreshCw, Zap } from "lucide-react";
+import { AlertTriangle, Loader2, Radio, RefreshCw, Zap } from "lucide-react";
 
 import {
   listActiveAssets,
   listOntologyAlerts,
 } from "@/lib/ontology/ontology.functions";
+import { dispatchAction } from "@/lib/ontology/actions.functions";
 import type {
   ActiveAsset,
   OntologyAlert,
@@ -17,6 +18,14 @@ import type {
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,6 +33,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+type PendingAction = {
+  objectId: string;
+  objectKind: "ontology_alert" | "active_asset";
+  actionType: string;
+  title: string;
+  summary: string;
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
