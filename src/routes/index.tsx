@@ -45,12 +45,22 @@ type PendingAction = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Operations Command Center" },
+      { title: "Operations Command Center — Live Ontology Dashboard" },
       {
         name: "description",
         content:
-          "Real-time operations dashboard: AI risk alerts and active fleet assets.",
+          "Real-time operations dashboard surfacing AI risk alerts and active fleet assets from the ontology layer, with one-click action dispatch.",
       },
+      { property: "og:title", content: "Operations Command Center — Live Ontology Dashboard" },
+      {
+        property: "og:description",
+        content:
+          "Real-time operations dashboard surfacing AI risk alerts and active fleet assets from the ontology layer, with one-click action dispatch.",
+      },
+      { property: "og:url", content: "https://kinetic-ontology-flow-palantir.lovable.app/" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://kinetic-ontology-flow-palantir.lovable.app/" },
     ],
   }),
   component: CommandCenter,
