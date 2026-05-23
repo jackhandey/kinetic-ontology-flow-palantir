@@ -296,8 +296,12 @@ function CommandCenter() {
                           variant="outline"
                           className="h-6 border-zinc-700 bg-transparent px-2 font-mono text-[10px] uppercase tracking-widest text-zinc-200 hover:bg-zinc-100 hover:text-zinc-900"
                           onClick={() =>
-                            toast.success(`Action dispatched`, {
-                              description: `Alert ${a.id.slice(0, 8)} → ${a.headline}`,
+                            setPending({
+                              objectId: a.id,
+                              objectKind: "ontology_alert",
+                              actionType: "acknowledge_alert",
+                              title: a.headline,
+                              summary: `${a.severity.toUpperCase()} · ${a.category} · ${fmtUsd(a.exposureUsd)} exposure`,
                             })
                           }
                         >
@@ -377,8 +381,12 @@ function CommandCenter() {
                           variant="outline"
                           className="h-6 border-zinc-700 bg-transparent px-2 font-mono text-[10px] uppercase tracking-widest text-zinc-200 hover:bg-zinc-100 hover:text-zinc-900"
                           onClick={() =>
-                            toast.success("Action dispatched", {
-                              description: `Asset ${a.trackingId} → operator notified`,
+                            setPending({
+                              objectId: a.id,
+                              objectKind: "active_asset",
+                              actionType: "notify_operator",
+                              title: `${a.trackingId} (${a.assetType})`,
+                              summary: `Status: ${a.status.replace("_", " ")} · ${a.speedKph == null ? "no speed" : `${a.speedKph.toFixed(0)} kph`}`,
                             })
                           }
                         >
@@ -393,6 +401,13 @@ function CommandCenter() {
           </div>
         </section>
       </main>
+
+      <ConfirmActionDialog
+        pending={pending}
+        isPending={dispatchM.isPending}
+        onCancel={() => setPending(null)}
+        onConfirm={() => pending && dispatchM.mutate(pending)}
+      />
     </div>
   );
 }
