@@ -72,16 +72,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Enterprise operational platform that maps raw data to business objects and enables risk evaluation and action." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Enterprise operational platform that maps raw data to business objects and enables risk evaluation and action." },
+      { title: "Operations Command Center" },
+      { name: "description", content: "Enterprise operations dashboard mapping raw signals to business objects for live risk evaluation and rapid action." },
+      { property: "og:title", content: "Operations Command Center" },
+      { property: "og:description", content: "Enterprise operations dashboard mapping raw signals to business objects for live risk evaluation and rapid action." },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Operations Command Center" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Enterprise operational platform that maps raw data to business objects and enables risk evaluation and action." },
+      { name: "twitter:title", content: "Operations Command Center" },
+      { name: "twitter:description", content: "Enterprise operations dashboard mapping raw signals to business objects for live risk evaluation and rapid action." },
     ],
     links: [
       {
