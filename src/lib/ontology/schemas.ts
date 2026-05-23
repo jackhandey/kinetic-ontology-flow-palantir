@@ -256,3 +256,21 @@ export const ListQuerySchema = z.object({
 export type ListQuery = z.infer<typeof ListQuerySchema>;
 
 export const GetByIdSchema = z.object({ id: z.string().min(1).max(255) });
+
+// ---------------------------------------------------------------------------
+// RiskEvaluation — strict structured output from the LLM evaluator.
+// Mirrored as the JSON-schema tool definition on the server side.
+// ---------------------------------------------------------------------------
+
+export const RiskEvaluationSchema = z.object({
+  riskDetected: z.boolean(),
+  severity: RiskSeveritySchema,
+  category: RiskCategorySchema,
+  headline: z.string().min(1).max(200),
+  description: z.string().min(1).max(2000),
+  impactedAssetIds: z.array(z.string()).max(50),
+  impactedRouteIds: z.array(z.string()).max(50),
+  exposureUsd: z.number().nonnegative().nullable(),
+  rationale: z.string().max(2000).nullable(),
+});
+export type RiskEvaluation = z.infer<typeof RiskEvaluationSchema>;

@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      ontology_alerts: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          detected_at: string
+          evaluation_model: string | null
+          evaluation_payload: Json | null
+          exposure_usd: number | null
+          headline: string
+          id: string
+          impacted_asset_ids: string[]
+          impacted_route_ids: string[]
+          organization_id: string
+          resolved_at: string | null
+          severity: string
+          source_asset_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          evaluation_model?: string | null
+          evaluation_payload?: Json | null
+          exposure_usd?: number | null
+          headline: string
+          id?: string
+          impacted_asset_ids?: string[]
+          impacted_route_ids?: string[]
+          organization_id: string
+          resolved_at?: string | null
+          severity: string
+          source_asset_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          evaluation_model?: string | null
+          evaluation_payload?: Json | null
+          exposure_usd?: number | null
+          headline?: string
+          id?: string
+          impacted_asset_ids?: string[]
+          impacted_route_ids?: string[]
+          organization_id?: string
+          resolved_at?: string | null
+          severity?: string
+          source_asset_id?: string
+        }
+        Relationships: []
+      }
       organizations: {
         Row: {
           created_at: string
