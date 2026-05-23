@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Radio, RefreshCw, Zap } from "lucide-react";
+import { AlertTriangle, Loader2, Radio, RefreshCw, Zap } from "lucide-react";
 
 import {
   listActiveAssets,
   listOntologyAlerts,
 } from "@/lib/ontology/ontology.functions";
+import { dispatchAction } from "@/lib/ontology/actions.functions";
 import type {
   ActiveAsset,
   OntologyAlert,
@@ -17,6 +18,14 @@ import type {
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,6 +33,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+type PendingAction = {
+  objectId: string;
+  objectKind: "ontology_alert" | "active_asset";
+  actionType: string;
+  title: string;
+  summary: string;
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -99,7 +116,9 @@ function fmtUsd(n: number | null): string {
 function CommandCenter() {
   const fetchAlerts = useServerFn(listOntologyAlerts);
   const fetchAssets = useServerFn(listActiveAssets);
+  const dispatchFn = useServerFn(dispatchAction);
   const [now, setNow] = useState(() => new Date());
+  const [pending, setPending] = useState<PendingAction | null>(null);
 
   const alertsQ = useQuery({
     queryKey: ["ontology_alerts"],
@@ -110,6 +129,27 @@ function CommandCenter() {
     queryKey: ["active_assets"],
     queryFn: () => fetchAssets({ data: { limit: 100, offset: 0 } }),
     refetchInterval: 30_000,
+  });
+
+  const dispatchM = useMutation({
+    mutationFn: (input: PendingAction) =>
+      dispatchFn({
+        data: {
+          objectId: input.objectId,
+          objectKind: input.objectKind,
+          actionType: input.actionType,
+        },
+      }),
+    onSuccess: (_res, input) => {
+      toast.success("Webhook acknowledged (200 OK)", {
+        description: `${input.actionType} → ${input.title}`,
+      });
+      setPending(null);
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error("Webhook dispatch failed", { description: msg });
+    },
   });
 
   const alerts: OntologyAlert[] = alertsQ.data?.items ?? [];
@@ -256,8 +296,12 @@ function CommandCenter() {
                           variant="outline"
                           className="h-6 border-zinc-700 bg-transparent px-2 font-mono text-[10px] uppercase tracking-widest text-zinc-200 hover:bg-zinc-100 hover:text-zinc-900"
                           onClick={() =>
-                            toast.success(`Action dispatched`, {
-                              description: `Alert ${a.id.slice(0, 8)} → ${a.headline}`,
+                            setPending({
+                              objectId: a.id,
+                              objectKind: "ontology_alert",
+                              actionType: "acknowledge_alert",
+                              title: a.headline,
+                              summary: `${a.severity.toUpperCase()} · ${a.category} · ${fmtUsd(a.exposureUsd)} exposure`,
                             })
                           }
                         >
@@ -337,8 +381,12 @@ function CommandCenter() {
                           variant="outline"
                           className="h-6 border-zinc-700 bg-transparent px-2 font-mono text-[10px] uppercase tracking-widest text-zinc-200 hover:bg-zinc-100 hover:text-zinc-900"
                           onClick={() =>
-                            toast.success("Action dispatched", {
-                              description: `Asset ${a.trackingId} → operator notified`,
+                            setPending({
+                              objectId: a.id,
+                              objectKind: "active_asset",
+                              actionType: "notify_operator",
+                              title: `${a.trackingId} (${a.assetType})`,
+                              summary: `Status: ${a.status.replace("_", " ")} · ${a.speedKph == null ? "no speed" : `${a.speedKph.toFixed(0)} kph`}`,
                             })
                           }
                         >
@@ -353,6 +401,13 @@ function CommandCenter() {
           </div>
         </section>
       </main>
+
+      <ConfirmActionDialog
+        pending={pending}
+        isPending={dispatchM.isPending}
+        onCancel={() => setPending(null)}
+        onConfirm={() => pending && dispatchM.mutate(pending)}
+      />
     </div>
   );
 }
@@ -431,5 +486,95 @@ function EmptyRow({ colSpan, label }: { colSpan: number; label: string }) {
         {label}
       </TableCell>
     </TableRow>
+  );
+}
+
+function ConfirmActionDialog({
+  pending,
+  isPending,
+  onCancel,
+  onConfirm,
+}: {
+  pending: PendingAction | null;
+  isPending: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog
+      open={pending !== null}
+      onOpenChange={(open) => {
+        if (!open && !isPending) onCancel();
+      }}
+    >
+      <DialogContent className="border-zinc-800 bg-zinc-950 text-zinc-100 sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-200">
+            Confirm Action
+          </DialogTitle>
+          <DialogDescription className="font-mono text-[11px] uppercase tracking-widest text-zinc-500">
+            This dispatches a webhook to the operations endpoint. No database
+            rows will be modified directly.
+          </DialogDescription>
+        </DialogHeader>
+        {pending && (
+          <div className="space-y-3 border-t border-zinc-800 pt-3 text-sm">
+            <Row label="Action" value={pending.actionType} mono />
+            <Row label="Target" value={pending.title} />
+            <Row label="Context" value={pending.summary} />
+            <Row label="Object ID" value={pending.objectId} mono small />
+          </div>
+        )}
+        <DialogFooter className="mt-2 gap-2 sm:gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isPending}
+            className="border-zinc-700 bg-transparent font-mono text-[11px] uppercase tracking-widest text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={isPending}
+            className="bg-emerald-500 font-mono text-[11px] uppercase tracking-widest text-zinc-950 hover:bg-emerald-400"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-1.5 size-3 animate-spin" />
+                Dispatching…
+              </>
+            ) : (
+              "Confirm & Dispatch"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Row({
+  label,
+  value,
+  mono,
+  small,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  small?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[100px_1fr] items-baseline gap-3">
+      <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+        {label}
+      </span>
+      <span
+        className={`${mono ? "font-mono" : ""} ${small ? "text-[11px] text-zinc-400" : "text-zinc-100"} break-all`}
+      >
+        {value}
+      </span>
+    </div>
   );
 }
