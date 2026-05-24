@@ -13,6 +13,7 @@ import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminProposalsRouteImport } from './routes/admin/proposals'
 import { Route as ObjectsTypeIdRouteImport } from './routes/objects/$type.$id'
 import { Route as ApiPublicHooksEvaluateAssetRisksRouteImport } from './routes/api/public/hooks/evaluate-asset-risks'
 
@@ -36,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProposalsRoute = AdminProposalsRouteImport.update({
+  id: '/admin/proposals',
+  path: '/admin/proposals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ObjectsTypeIdRoute = ObjectsTypeIdRouteImport.update({
   id: '/objects/$type/$id',
   path: '/objects/$type/$id',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tasks': typeof TasksRoute
+  '/admin/proposals': typeof AdminProposalsRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tasks': typeof TasksRoute
+  '/admin/proposals': typeof AdminProposalsRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tasks': typeof TasksRoute
+  '/admin/proposals': typeof AdminProposalsRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/sitemap.xml'
     | '/tasks'
+    | '/admin/proposals'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   fileRoutesByTo: FileRoutesByTo
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/sitemap.xml'
     | '/tasks'
+    | '/admin/proposals'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   id:
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/sitemap.xml'
     | '/tasks'
+    | '/admin/proposals'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   fileRoutesById: FileRoutesById
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TasksRoute: typeof TasksRoute
+  AdminProposalsRoute: typeof AdminProposalsRoute
   ObjectsTypeIdRoute: typeof ObjectsTypeIdRoute
   ApiPublicHooksEvaluateAssetRisksRoute: typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
@@ -139,6 +152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/proposals': {
+      id: '/admin/proposals'
+      path: '/admin/proposals'
+      fullPath: '/admin/proposals'
+      preLoaderRoute: typeof AdminProposalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/objects/$type/$id': {
       id: '/objects/$type/$id'
       path: '/objects/$type/$id'
@@ -161,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TasksRoute: TasksRoute,
+  AdminProposalsRoute: AdminProposalsRoute,
   ObjectsTypeIdRoute: ObjectsTypeIdRoute,
   ApiPublicHooksEvaluateAssetRisksRoute: ApiPublicHooksEvaluateAssetRisksRoute,
 }

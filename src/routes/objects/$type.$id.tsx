@@ -7,6 +7,7 @@ import { ArrowLeft, Loader2, Network } from "lucide-react";
 import { getObjectGraph } from "@/lib/ontology/graph.functions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PresenceLayer } from "@/components/ontology/PresenceLayer";
 import { ActionsPanel } from "@/components/ontology/ActionsPanel";
 import { VibeBar } from "@/components/ontology/VibeBar";
 import { HistoryPanel } from "@/components/ontology/HistoryPanel";
@@ -77,7 +78,8 @@ function ObjectExplorer() {
   }, [type, id, qc]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200">
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 relative">
+      <PresenceLayer room={`object:${type}:${id}`} />
       <header className="border-b border-zinc-800 px-6 py-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
