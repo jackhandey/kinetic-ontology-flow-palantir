@@ -247,6 +247,12 @@ function CommandCenter() {
         >
           tasks →
         </a>
+        <a
+          href="/admin/proposals"
+          className="font-mono text-[10px] uppercase tracking-widest text-emerald-400 hover:text-emerald-300 border border-zinc-800 px-3 py-1.5 rounded-sm"
+        >
+          proposals →
+        </a>
       </section>
 
 
