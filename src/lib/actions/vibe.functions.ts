@@ -7,7 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { requestAction } from "./action-framework.functions";
+// Inline dispatch to avoid server-fn-to-server-fn auth loss.
 
 async function getOrgId(userId: string): Promise<string | null> {
   const { data } = await supabaseAdmin
