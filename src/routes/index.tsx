@@ -132,6 +132,30 @@ function CommandCenter() {
   const dispatchFn = useServerFn(dispatchAction);
   const [now, setNow] = useState(() => new Date());
   const [pending, setPending] = useState<PendingAction | null>(null);
+  const qc = useQueryClient();
+
+  // Realtime: refresh alerts/assets on any backend change.
+  useEffect(() => {
+    const ch = supabase
+      .channel("command-center")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ontology_alerts" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["ontology_alerts"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "action_requests" },
+        () => qc.invalidateQueries({ queryKey: ["ontology_alerts"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [qc]);
+
 
   const alertsQ = useQuery({
     queryKey: ["ontology_alerts"],
