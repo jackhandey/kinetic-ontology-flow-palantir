@@ -86,7 +86,9 @@ export type Database = {
           enabled: boolean
           id: string
           organization_id: string
+          payload_schema: Json | null
           requires_approval_rule: Json | null
+          rpc_function: string | null
           target_object_type: string
           validation_rules: Json
           webhook_url: string | null
@@ -99,7 +101,9 @@ export type Database = {
           enabled?: boolean
           id?: string
           organization_id: string
+          payload_schema?: Json | null
           requires_approval_rule?: Json | null
+          rpc_function?: string | null
           target_object_type: string
           validation_rules?: Json
           webhook_url?: string | null
@@ -112,7 +116,9 @@ export type Database = {
           enabled?: boolean
           id?: string
           organization_id?: string
+          payload_schema?: Json | null
           requires_approval_rule?: Json | null
+          rpc_function?: string | null
           target_object_type?: string
           validation_rules?: Json
           webhook_url?: string | null
@@ -331,7 +337,9 @@ export type Database = {
           impacted_asset_ids: string[]
           impacted_route_ids: string[]
           organization_id: string
+          resolution_note: string | null
           resolved_at: string | null
+          resolved_by: string | null
           severity: string
           source_asset_id: string
         }
@@ -348,7 +356,9 @@ export type Database = {
           impacted_asset_ids?: string[]
           impacted_route_ids?: string[]
           organization_id: string
+          resolution_note?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
           severity: string
           source_asset_id: string
         }
@@ -365,7 +375,9 @@ export type Database = {
           impacted_asset_ids?: string[]
           impacted_route_ids?: string[]
           organization_id?: string
+          resolution_note?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
           severity?: string
           source_asset_id?: string
         }
@@ -1191,6 +1203,34 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      resolve_ontology_alert: {
+        Args: { _alert_id: string; _resolution_note?: string }
+        Returns: {
+          category: string
+          created_at: string
+          description: string | null
+          detected_at: string
+          evaluation_model: string | null
+          evaluation_payload: Json | null
+          exposure_usd: number | null
+          headline: string
+          id: string
+          impacted_asset_ids: string[]
+          impacted_route_ids: string[]
+          organization_id: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          source_asset_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ontology_alerts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       user_has_marking: {
         Args: { _marking_id: string; _user_id: string }
