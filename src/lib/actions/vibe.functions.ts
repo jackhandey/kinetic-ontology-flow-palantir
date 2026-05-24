@@ -9,14 +9,39 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // Inline dispatch to avoid server-fn-to-server-fn auth loss.
 
-async function getOrgId(userId: string): Promise<string | null> {
+async function getOrgRole(userId: string): Promise<{ orgId: string; role: string } | null> {
   const { data } = await supabaseAdmin
     .from("user_roles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("user_id", userId)
     .limit(1)
     .maybeSingle();
-  return data?.organization_id ?? null;
+  return data ? { orgId: data.organization_id, role: data.role } : null;
+}
+
+type ApprovalRule = {
+  field: string;
+  op: ">" | ">=" | "<" | "<=" | "==";
+  value: number | string | boolean;
+};
+
+function getField(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>(
+    (acc, p) => (acc && typeof acc === "object" ? (acc as Record<string, unknown>)[p] : undefined),
+    obj,
+  );
+}
+
+function evalApproval(rule: ApprovalRule | null, payload: Record<string, unknown>): boolean {
+  if (!rule) return false;
+  const v = getField(payload, rule.field);
+  switch (rule.op) {
+    case ">": return typeof v === "number" && typeof rule.value === "number" && v > rule.value;
+    case ">=": return typeof v === "number" && typeof rule.value === "number" && v >= rule.value;
+    case "<": return typeof v === "number" && typeof rule.value === "number" && v < rule.value;
+    case "<=": return typeof v === "number" && typeof rule.value === "number" && v <= rule.value;
+    case "==": return v === rule.value;
+  }
 }
 
 export const VibeInput = z.object({
