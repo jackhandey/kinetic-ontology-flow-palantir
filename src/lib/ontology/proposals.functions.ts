@@ -59,7 +59,7 @@ export const scanRawForProposals = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const role = await getOrgRole(context.userId);
-    if (!role) throw new Error("No organization");
+    if (!role || role.role !== "admin") throw new Error("Admin role required");
 
     // Pull a sample of recent raw rows.
     const { data: rows, error } = await supabaseAdmin
