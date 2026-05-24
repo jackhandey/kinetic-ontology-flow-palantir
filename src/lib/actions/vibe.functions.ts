@@ -138,8 +138,9 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       ok: true as const,
       action: action.api_name,
       targetObjectId: args.target_object_id,
-      payload: args.payload ?? {},
+      payloadJson: JSON.stringify(args.payload ?? {}),
       requestId: dispatch.requestId,
       status: dispatch.status,
     };
   });
+
