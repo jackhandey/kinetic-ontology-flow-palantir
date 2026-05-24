@@ -1116,6 +1116,42 @@ export type Database = {
           },
         ]
       }
+      tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id: string
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_marking_grants: {
         Row: {
           granted_at: string
@@ -1204,6 +1240,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_task_complete: {
+        Args: { _alert_id: string }
+        Returns: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       resolve_ontology_alert: {
         Args: { _alert_id: string; _resolution_note?: string }
         Returns: {
@@ -1228,6 +1284,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "ontology_alerts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_task_priority: {
+        Args: { _alert_id: string; _level: string }
+        Returns: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
           isOneToOne: true
           isSetofReturn: false
         }
