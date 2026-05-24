@@ -6,8 +6,12 @@ import { ArrowLeft, Loader2, Network } from "lucide-react";
 
 import { getObjectGraph } from "@/lib/ontology/graph.functions";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionsPanel } from "@/components/ontology/ActionsPanel";
 import { VibeBar } from "@/components/ontology/VibeBar";
+import { HistoryPanel } from "@/components/ontology/HistoryPanel";
+import { LineagePanel } from "@/components/ontology/LineagePanel";
+import { Breadcrumbs } from "@/components/ontology/Breadcrumbs";
 import { supabase } from "@/integrations/supabase/client";
 
 
