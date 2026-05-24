@@ -9,14 +9,39 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // Inline dispatch to avoid server-fn-to-server-fn auth loss.
 
-async function getOrgId(userId: string): Promise<string | null> {
+async function getOrgRole(userId: string): Promise<{ orgId: string; role: string } | null> {
   const { data } = await supabaseAdmin
     .from("user_roles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("user_id", userId)
     .limit(1)
     .maybeSingle();
-  return data?.organization_id ?? null;
+  return data ? { orgId: data.organization_id, role: data.role } : null;
+}
+
+type ApprovalRule = {
+  field: string;
+  op: ">" | ">=" | "<" | "<=" | "==";
+  value: number | string | boolean;
+};
+
+function getField(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>(
+    (acc, p) => (acc && typeof acc === "object" ? (acc as Record<string, unknown>)[p] : undefined),
+    obj,
+  );
+}
+
+function evalApproval(rule: ApprovalRule | null, payload: Record<string, unknown>): boolean {
+  if (!rule) return false;
+  const v = getField(payload, rule.field);
+  switch (rule.op) {
+    case ">": return typeof v === "number" && typeof rule.value === "number" && v > rule.value;
+    case ">=": return typeof v === "number" && typeof rule.value === "number" && v >= rule.value;
+    case "<": return typeof v === "number" && typeof rule.value === "number" && v < rule.value;
+    case "<=": return typeof v === "number" && typeof rule.value === "number" && v <= rule.value;
+    case "==": return v === rule.value;
+  }
 }
 
 export const VibeInput = z.object({
@@ -31,8 +56,9 @@ export const dispatchVibe = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("Lovable AI is not configured");
-    const orgId = await getOrgId(context.userId);
-    if (!orgId) throw new Error("No organization");
+    const role = await getOrgRole(context.userId);
+    if (!role) throw new Error("No organization");
+    const orgId = role.orgId;
 
     const { data: actions, error } = await supabaseAdmin
       .from("action_types")
@@ -178,10 +204,51 @@ export const dispatchVibe = createServerFn({ method: "POST" })
 
     // Inline dispatch: insert action_request, then call the RPC or webhook.
     const payload = args.payload ?? {};
+
+    // Fetch full action_type to evaluate approval rules + dispatch target.
+    const { data: at } = await supabaseAdmin
+      .from("action_types")
+      .select("id, rpc_function, webhook_url, api_name, requires_approval_rule")
+      .eq("id", action.id)
+      .eq("organization_id", orgId)
+      .single();
+    if (!at) return { ok: false as const, message: "Action type not found" };
+
+    const needsApproval = evalApproval(
+      (at.requires_approval_rule as unknown as ApprovalRule | null) ?? null,
+      payload,
+    );
+
+    // Approval-gated actions can only be self-approved by admins. Non-admins
+    // get a pending_approval record so the standard approval flow takes over.
+    if (needsApproval && role.role !== "admin") {
+      const { data: pending, error: pendErr } = await supabaseAdmin
+        .from("action_requests")
+        .insert({
+          action_type_id: at.id,
+          organization_id: orgId,
+          target_object_id: args.target_object_id,
+          payload: payload as never,
+          status: "pending_approval",
+          requested_by: context.userId,
+        })
+        .select()
+        .single();
+      if (pendErr || !pending) throw new Error(pendErr?.message ?? "Insert failed");
+      return {
+        ok: true as const,
+        action: at.api_name,
+        targetObjectId: args.target_object_id,
+        payloadJson: JSON.stringify(payload),
+        requestId: pending.id,
+        status: "pending_approval" as const,
+      };
+    }
+
     const { data: req, error: reqErr } = await supabaseAdmin
       .from("action_requests")
       .insert({
-        action_type_id: action.id,
+        action_type_id: at.id,
         organization_id: orgId,
         target_object_id: args.target_object_id,
         payload: payload as never,
@@ -194,14 +261,8 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       .single();
     if (reqErr || !req) throw new Error(reqErr?.message ?? "Insert failed");
 
-    // Best-effort dispatch via RPC (mirrors action-framework's tryDispatch).
-    const { data: at } = await supabaseAdmin
-      .from("action_types")
-      .select("rpc_function, webhook_url, api_name")
-      .eq("id", action.id)
-      .single();
-
-    if (at?.rpc_function) {
+    // Dispatch via RPC if configured, otherwise via webhook.
+    if (at.rpc_function) {
       const rpcArgs: Record<string, unknown> = {
         _alert_id: args.target_object_id,
         ...Object.fromEntries(
@@ -221,16 +282,59 @@ export const dispatchVibe = createServerFn({ method: "POST" })
         })
         .eq("id", req.id);
       if (rpcErr) throw new Error(rpcErr.message);
+    } else {
+      const url = at.webhook_url ?? process.env.N8N_WEBHOOK_URL;
+      if (!url) {
+        await supabaseAdmin
+          .from("action_requests")
+          .update({ status: "failed", dispatch_response: { error: "no webhook configured" } })
+          .eq("id", req.id);
+        return { ok: false as const, message: "No dispatch target configured for this action" };
+      }
+      try {
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action_type: at.api_name,
+            object_id: args.target_object_id,
+            payload,
+            requested_at: new Date().toISOString(),
+          }),
+        });
+        const body = (await r.text().catch(() => "")).slice(0, 1000);
+        const ok = r.status >= 200 && r.status < 300;
+        await supabaseAdmin
+          .from("action_requests")
+          .update({
+            status: ok ? "succeeded" : "failed",
+            dispatched_at: new Date().toISOString(),
+            dispatch_response: { status: r.status, body },
+          })
+          .eq("id", req.id);
+        if (!ok) throw new Error(`Webhook returned ${r.status}`);
+      } catch (err) {
+        await supabaseAdmin
+          .from("action_requests")
+          .update({
+            status: "failed",
+            dispatched_at: new Date().toISOString(),
+            dispatch_response: { error: err instanceof Error ? err.message : String(err) },
+          })
+          .eq("id", req.id);
+        throw err;
+      }
     }
 
     return {
       ok: true as const,
-      action: action.api_name,
+      action: at.api_name,
       targetObjectId: args.target_object_id,
       payloadJson: JSON.stringify(payload),
       requestId: req.id,
       status: "dispatched" as const,
     };
+
   });
 
 
