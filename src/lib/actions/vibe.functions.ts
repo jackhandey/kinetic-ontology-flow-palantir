@@ -46,8 +46,8 @@ function evalApproval(rule: ApprovalRule | null, payload: Record<string, unknown
 
 export const VibeInput = z.object({
   prompt: z.string().min(2).max(2000),
-  contextObjectId: z.string().min(1).max(255).optional(),
-  contextObjectType: z.string().min(1).max(64).optional(),
+  contextObjectId: z.string().min(1).max(255).regex(/^[a-zA-Z0-9_-]+$/).optional(),
+  contextObjectType: z.string().min(1).max(64).regex(/^[a-z0-9_]+$/).optional(),
 });
 
 export const dispatchVibe = createServerFn({ method: "POST" })
