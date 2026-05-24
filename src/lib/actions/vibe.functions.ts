@@ -239,6 +239,9 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       (at.requires_approval_rule as unknown as ApprovalRule | null) ?? null,
       payload,
     );
+    if (needsApproval) {
+      reasoning.push(`Approval rule matched — gating dispatch`);
+    }
 
     // Approval-gated actions can only be self-approved by admins. Non-admins
     // get a pending_approval record so the standard approval flow takes over.
