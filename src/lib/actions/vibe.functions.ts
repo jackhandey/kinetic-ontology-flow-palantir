@@ -353,6 +353,7 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       }
     }
 
+    reasoning.push(`Dispatched via ${at.rpc_function ? `rpc:${at.rpc_function}` : "webhook"}`);
     return {
       ok: true as const,
       action: at.api_name,
@@ -360,6 +361,8 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       payloadJson: JSON.stringify(payload),
       requestId: req.id,
       status: "dispatched" as const,
+      reasoning,
+      contextNodeIds,
     };
 
   });
