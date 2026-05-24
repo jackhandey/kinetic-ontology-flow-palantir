@@ -9,7 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in · AIP Ontology" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sign in · AIP Ontology" },
+      { name: "description", content: "Sign in to the AIP Ontology operations dashboard." },
+    ],
+  }),
   component: LoginPage,
 });
 
