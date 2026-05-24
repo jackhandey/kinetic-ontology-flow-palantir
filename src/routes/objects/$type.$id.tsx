@@ -24,6 +24,16 @@ export const Route = createFileRoute("/objects/$type/$id")({
         name: "description",
         content: `Relational graph view of ontology object ${params.id.slice(0, 8)} (${params.type}).`,
       },
+      { property: "og:title", content: `${params.type} · ${params.id.slice(0, 8)} — Explorer` },
+      {
+        property: "og:description",
+        content: `Relational graph view of ontology object ${params.id.slice(0, 8)} (${params.type}).`,
+      },
+      { property: "og:type", content: "article" },
+      { property: "og:url", content: `https://kinetic-ontology-flow-palantir.lovable.app/objects/${params.type}/${params.id}` },
+    ],
+    links: [
+      { rel: "canonical", href: `https://kinetic-ontology-flow-palantir.lovable.app/objects/${params.type}/${params.id}` },
     ],
   }),
   component: ObjectExplorer,

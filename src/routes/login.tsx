@@ -13,6 +13,13 @@ export const Route = createFileRoute("/login")({
     meta: [
       { title: "Sign in · AIP Ontology" },
       { name: "description", content: "Sign in to the AIP Ontology operations dashboard." },
+      { property: "og:title", content: "Sign in · AIP Ontology" },
+      { property: "og:description", content: "Sign in to the AIP Ontology operations dashboard." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://kinetic-ontology-flow-palantir.lovable.app/login" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://kinetic-ontology-flow-palantir.lovable.app/login" },
     ],
   }),
   component: LoginPage,
