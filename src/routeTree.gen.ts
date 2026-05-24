@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ObjectsTypeIdRouteImport } from './routes/objects/$type.$id'
 import { Route as ApiPublicHooksEvaluateAssetRisksRouteImport } from './routes/api/public/hooks/evaluate-asset-risks'
@@ -17,6 +18,11 @@ import { Route as ApiPublicHooksEvaluateAssetRisksRouteImport } from './routes/a
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -38,12 +44,14 @@ const ApiPublicHooksEvaluateAssetRisksRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
@@ -51,6 +59,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
@@ -59,18 +68,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/sitemap.xml'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/sitemap.xml'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   id:
     | '__root__'
     | '/'
+    | '/login'
     | '/sitemap.xml'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
@@ -78,6 +90,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ObjectsTypeIdRoute: typeof ObjectsTypeIdRoute
   ApiPublicHooksEvaluateAssetRisksRoute: typeof ApiPublicHooksEvaluateAssetRisksRoute
@@ -90,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -118,6 +138,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ObjectsTypeIdRoute: ObjectsTypeIdRoute,
   ApiPublicHooksEvaluateAssetRisksRoute: ApiPublicHooksEvaluateAssetRisksRoute,
@@ -125,3 +146,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
