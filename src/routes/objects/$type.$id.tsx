@@ -78,7 +78,8 @@ function ObjectExplorer() {
   }, [type, id, qc]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200">
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 relative">
+      <PresenceLayer room={`object:${type}:${id}`} />
       <header className="border-b border-zinc-800 px-6 py-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
