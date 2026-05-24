@@ -15,7 +15,13 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async () => {
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
+          { path: "/login", changefreq: "monthly", priority: "0.5" },
+          { path: "/tasks", changefreq: "daily", priority: "0.7" },
+          { path: "/admin/proposals", changefreq: "weekly", priority: "0.5" },
         ];
+        // Note: /objects/$type/$id requires authentication and has no public
+        // listing endpoint, so individual object pages are intentionally omitted.
+        // /api/public/hooks/* is a webhook endpoint, not an indexable page.
 
         const urls = entries.map((e) =>
           [
