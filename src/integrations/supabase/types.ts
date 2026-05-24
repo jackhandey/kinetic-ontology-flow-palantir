@@ -1149,6 +1149,51 @@ export type Database = {
           },
         ]
       }
+      schema_proposals: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          id: string
+          organization_id: string
+          proposal: Json
+          proposed_by: string | null
+          rationale: string | null
+          source: string
+          status: Database["public"]["Enums"]["schema_proposal_status"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          organization_id: string
+          proposal?: Json
+          proposed_by?: string | null
+          rationale?: string | null
+          source: string
+          status?: Database["public"]["Enums"]["schema_proposal_status"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          organization_id?: string
+          proposal?: Json
+          proposed_by?: string | null
+          rationale?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["schema_proposal_status"]
+          title?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           completed_at: string | null
@@ -1370,6 +1415,7 @@ export type Database = {
         | "enum"
         | "json"
       pipeline_run_status: "pending" | "running" | "succeeded" | "failed"
+      schema_proposal_status: "pending" | "promoted" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1518,6 +1564,7 @@ export const Constants = {
         "json",
       ],
       pipeline_run_status: ["pending", "running", "succeeded", "failed"],
+      schema_proposal_status: ["pending", "promoted", "rejected"],
     },
   },
 } as const
