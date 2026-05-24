@@ -237,9 +237,18 @@ function CommandCenter() {
       </header>
 
       {/* Vibe command bar — natural language dispatch */}
-      <section className="border-b border-zinc-800/80 bg-zinc-950 px-6 py-3">
-        <VibeBar placeholder="Vibe: e.g. resolve the latest critical alert" />
+      <section className="border-b border-zinc-800/80 bg-zinc-950 px-6 py-3 flex items-center gap-3">
+        <div className="flex-1">
+          <VibeBar placeholder="Vibe: e.g. resolve the latest critical alert · mark the first task complete" />
+        </div>
+        <a
+          href="/tasks"
+          className="font-mono text-[10px] uppercase tracking-widest text-emerald-400 hover:text-emerald-300 border border-zinc-800 px-3 py-1.5 rounded-sm"
+        >
+          tasks →
+        </a>
       </section>
+
 
 
       {/* KPI grid */}
