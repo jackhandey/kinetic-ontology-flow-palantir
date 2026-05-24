@@ -189,6 +189,7 @@ function TasksPage() {
                     onCheckedChange={() => toggleBulk(t.id)}
                     onClick={(e) => e.stopPropagation()}
                     className="border-zinc-700"
+                    aria-label={`Select task ${t.title}`}
                   />
                   <div
                     className="flex items-center gap-3 flex-1 min-w-0"
