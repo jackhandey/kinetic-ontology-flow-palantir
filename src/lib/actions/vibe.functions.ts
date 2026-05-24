@@ -84,7 +84,9 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       "If nothing matches, respond plainly without calling a tool.",
       `Context object: ${data.contextObjectType ?? "n/a"} / ${data.contextObjectId ?? "n/a"}`,
       `Recent alerts: ${JSON.stringify(recentAlerts ?? [])}`,
+      `Recent tasks: ${JSON.stringify(recentTasks ?? [])}`,
     ].join("\n");
+
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
