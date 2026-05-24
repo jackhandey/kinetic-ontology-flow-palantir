@@ -118,7 +118,45 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <AuthGate>
+        <Outlet />
+      </AuthGate>
     </QueryClientProvider>
   );
 }
+
+const PUBLIC_PATHS = new Set(["/login"]);
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const qc = useQueryClient();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [checked, setChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthed(!!session);
+      setChecked(true);
+      qc.invalidateQueries();
+      router.invalidate();
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthed(!!data.session);
+      setChecked(true);
+    });
+    return () => subscription.unsubscribe();
+  }, [qc, router]);
+
+  useEffect(() => {
+    if (checked && !authed && !PUBLIC_PATHS.has(pathname)) {
+      router.navigate({ to: "/login" });
+    }
+  }, [checked, authed, pathname, router]);
+
+  if (!checked && !PUBLIC_PATHS.has(pathname)) {
+    return <div className="min-h-screen bg-zinc-950" />;
+  }
+  return <>{children}</>;
+}
+
