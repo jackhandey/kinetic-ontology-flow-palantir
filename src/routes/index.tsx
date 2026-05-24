@@ -236,6 +236,12 @@ function CommandCenter() {
         </div>
       </header>
 
+      {/* Vibe command bar — natural language dispatch */}
+      <section className="border-b border-zinc-800/80 bg-zinc-950 px-6 py-3">
+        <VibeBar placeholder="Vibe: e.g. resolve the latest critical alert" />
+      </section>
+
+
       {/* KPI grid */}
       <section className="grid grid-cols-2 gap-px border-b border-zinc-800/80 bg-zinc-800/80 md:grid-cols-4">
         <KpiCell
