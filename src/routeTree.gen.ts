@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ObjectsTypeIdRouteImport } from './routes/objects/$type.$id'
 import { Route as ApiPublicHooksEvaluateAssetRisksRouteImport } from './routes/api/public/hooks/evaluate-asset-risks'
 
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -39,12 +45,14 @@ const ApiPublicHooksEvaluateAssetRisksRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tasks': typeof TasksRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tasks': typeof TasksRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
@@ -52,6 +60,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tasks': typeof TasksRoute
   '/objects/$type/$id': typeof ObjectsTypeIdRoute
   '/api/public/hooks/evaluate-asset-risks': typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
@@ -60,18 +69,21 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/sitemap.xml'
+    | '/tasks'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/sitemap.xml'
+    | '/tasks'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   id:
     | '__root__'
     | '/'
     | '/sitemap.xml'
+    | '/tasks'
     | '/objects/$type/$id'
     | '/api/public/hooks/evaluate-asset-risks'
   fileRoutesById: FileRoutesById
@@ -79,12 +91,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TasksRoute: typeof TasksRoute
   ObjectsTypeIdRoute: typeof ObjectsTypeIdRoute
   ApiPublicHooksEvaluateAssetRisksRoute: typeof ApiPublicHooksEvaluateAssetRisksRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -119,9 +139,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TasksRoute: TasksRoute,
   ObjectsTypeIdRoute: ObjectsTypeIdRoute,
   ApiPublicHooksEvaluateAssetRisksRoute: ApiPublicHooksEvaluateAssetRisksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
