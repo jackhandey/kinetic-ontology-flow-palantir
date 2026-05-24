@@ -141,4 +141,14 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  /* High-density Palantir aesthetic: monospaced IDs + numerics */
+  .font-mono,
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-feature-settings: "tnum" 1, "ss01" 1;
+  }
 }
