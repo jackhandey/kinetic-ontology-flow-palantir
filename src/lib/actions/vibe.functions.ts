@@ -59,6 +59,43 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(20);
 
+    // Ontology RAG: when a context object is provided, hydrate connected
+    // objects + recent history so the LLM can reason over relationships.
+    let connectedObjects: Array<{ id: string; type: string; link: string }> = [];
+    let contextHistory: Array<{ action: string; created_at: string }> = [];
+    if (data.contextObjectId && data.contextObjectType) {
+      const { data: linkTypes } = await supabaseAdmin
+        .from("ontology_link_types")
+        .select("id, api_name, display_name")
+        .eq("organization_id", orgId);
+      const ltById = new Map((linkTypes ?? []).map((lt) => [lt.id, lt] as const));
+      const { data: links } = await supabaseAdmin
+        .from("ontology_object_links")
+        .select("link_type_id, from_object_id, to_object_id")
+        .eq("organization_id", orgId)
+        .or(
+          `from_object_id.eq.${data.contextObjectId},to_object_id.eq.${data.contextObjectId}`,
+        )
+        .limit(40);
+      connectedObjects = (links ?? []).map((l) => {
+        const lt = ltById.get(l.link_type_id);
+        const isFrom = l.from_object_id === data.contextObjectId;
+        return {
+          id: isFrom ? l.to_object_id : l.from_object_id,
+          type: lt?.api_name ?? "unknown",
+          link: lt?.display_name ?? "linked",
+        };
+      });
+      const { data: hist } = await supabaseAdmin
+        .from("audit_log")
+        .select("action, created_at")
+        .eq("organization_id", orgId)
+        .eq("object_type", data.contextObjectType)
+        .eq("object_id", data.contextObjectId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      contextHistory = hist ?? [];
+    }
 
     const tools = actions.map((a) => ({
       type: "function" as const,
@@ -80,11 +117,14 @@ export const dispatchVibe = createServerFn({ method: "POST" })
     const systemPrompt = [
       "You are an operations copilot for a Palantir-style ontology platform.",
       "Translate the user's request into ONE tool call from the available actions.",
-      "Use the recent alerts list to resolve references like 'the latest critical alert'.",
+      "Use the recent alerts/tasks list to resolve references like 'the latest critical alert'.",
+      "Use connectedObjects + contextHistory to reason about relationships and recent changes.",
       "If nothing matches, respond plainly without calling a tool.",
       `Context object: ${data.contextObjectType ?? "n/a"} / ${data.contextObjectId ?? "n/a"}`,
       `Recent alerts: ${JSON.stringify(recentAlerts ?? [])}`,
       `Recent tasks: ${JSON.stringify(recentTasks ?? [])}`,
+      `Connected objects: ${JSON.stringify(connectedObjects)}`,
+      `Context history: ${JSON.stringify(contextHistory)}`,
     ].join("\n");
 
 
