@@ -246,6 +246,39 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          diff: Json
+          id: string
+          object_id: string
+          object_type: string
+          organization_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          diff?: Json
+          id?: string
+          object_id: string
+          object_type: string
+          organization_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          diff?: Json
+          id?: string
+          object_id?: string
+          object_type?: string
+          organization_id?: string
+        }
+        Relationships: []
+      }
       classification_markings: {
         Row: {
           code: string
@@ -1231,6 +1264,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bulk_set_task_status: {
+        Args: { _ids: string[]; _status: string }
+        Returns: number
+      }
       current_user_orgs: { Args: never; Returns: string[] }
       has_role: {
         Args: {
