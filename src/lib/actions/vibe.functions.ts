@@ -181,26 +181,47 @@ export const dispatchVibe = createServerFn({ method: "POST" })
     const choice = body?.choices?.[0];
     const toolCall = choice?.message?.tool_calls?.[0];
 
+    // Visual reasoning: surface what the LLM "saw" + decided.
+    const reasoning: string[] = [
+      `Loaded ${actions.length} available actions for org`,
+      `Sampled ${recentAlerts?.length ?? 0} recent alerts, ${recentTasks?.length ?? 0} tasks`,
+    ];
+    if (data.contextObjectId) {
+      reasoning.push(
+        `Hydrated ${connectedObjects.length} connected objects + ${contextHistory.length} history entries for ${data.contextObjectType}/${data.contextObjectId}`,
+      );
+    }
+    const contextNodeIds: string[] = [
+      ...(data.contextObjectId ? [data.contextObjectId] : []),
+      ...connectedObjects.map((c) => c.id),
+      ...(recentAlerts ?? []).slice(0, 5).map((a) => a.id as string),
+    ];
+
     if (!toolCall) {
+      reasoning.push("Model returned no tool call — nothing dispatched");
       return {
         ok: false as const,
         message: choice?.message?.content ?? "No matching action found.",
+        reasoning,
+        contextNodeIds,
       };
     }
+    reasoning.push(`Model chose tool: ${toolCall.function?.name}`);
 
     const action = actions.find((a) => a.api_name === toolCall.function?.name);
     if (!action) {
-      return { ok: false as const, message: `Unknown action ${toolCall.function?.name}` };
+      return { ok: false as const, message: `Unknown action ${toolCall.function?.name}`, reasoning, contextNodeIds };
     }
     let args: { target_object_id?: string; payload?: Record<string, unknown> } = {};
     try {
       args = JSON.parse(toolCall.function?.arguments ?? "{}");
     } catch {
-      return { ok: false as const, message: "LLM returned unparseable arguments" };
+      return { ok: false as const, message: "LLM returned unparseable arguments", reasoning, contextNodeIds };
     }
     if (!args.target_object_id) {
-      return { ok: false as const, message: "LLM did not specify a target object" };
+      return { ok: false as const, message: "LLM did not specify a target object", reasoning, contextNodeIds };
     }
+    reasoning.push(`Target object: ${args.target_object_id}`);
 
     // Inline dispatch: insert action_request, then call the RPC or webhook.
     const payload = args.payload ?? {};
