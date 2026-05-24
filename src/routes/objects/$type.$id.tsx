@@ -1,10 +1,15 @@
+import { useEffect } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Network } from "lucide-react";
 
 import { getObjectGraph } from "@/lib/ontology/graph.functions";
 import { Button } from "@/components/ui/button";
+import { ActionsPanel } from "@/components/ontology/ActionsPanel";
+import { VibeBar } from "@/components/ontology/VibeBar";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/objects/$type/$id")({
   head: ({ params }) => ({
