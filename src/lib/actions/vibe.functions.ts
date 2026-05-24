@@ -259,6 +259,7 @@ export const dispatchVibe = createServerFn({ method: "POST" })
         .select()
         .single();
       if (pendErr || !pending) throw new Error(pendErr?.message ?? "Insert failed");
+      reasoning.push(`Created pending_approval request ${pending.id}`);
       return {
         ok: true as const,
         action: at.api_name,
@@ -266,6 +267,8 @@ export const dispatchVibe = createServerFn({ method: "POST" })
         payloadJson: JSON.stringify(payload),
         requestId: pending.id,
         status: "pending_approval" as const,
+        reasoning,
+        contextNodeIds,
       };
     }
 
