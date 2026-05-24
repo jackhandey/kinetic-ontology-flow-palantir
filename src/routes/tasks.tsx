@@ -142,6 +142,7 @@ function TasksPage() {
           <button
             onClick={() => setBulkIds(new Set())}
             className="ml-auto text-zinc-500 hover:text-zinc-300"
+            aria-label="Clear selection"
           >
             <X className="h-3 w-3" />
           </button>
@@ -188,6 +189,7 @@ function TasksPage() {
                     onCheckedChange={() => toggleBulk(t.id)}
                     onClick={(e) => e.stopPropagation()}
                     className="border-zinc-700"
+                    aria-label={`Select task ${t.title}`}
                   />
                   <div
                     className="flex items-center gap-3 flex-1 min-w-0"

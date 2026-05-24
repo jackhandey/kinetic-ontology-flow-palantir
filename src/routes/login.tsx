@@ -60,7 +60,7 @@ function LoginPage() {
       >
         <div>
           <h1 className="text-sm uppercase tracking-widest text-emerald-400">
-            aip.ontology
+            Sign In — AIP Ontology
           </h1>
           <p className="text-xs text-zinc-500 mt-1">
             {mode === "signin" ? "Sign in to continue" : "Create an account"}

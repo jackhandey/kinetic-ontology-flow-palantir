@@ -92,7 +92,7 @@ function ObjectExplorer() {
               <div className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
                 {type}
               </div>
-              <h1 className="font-mono text-lg">{id}</h1>
+              <h1 className="font-mono text-lg">Object Detail: {type} {id}</h1>
             </div>
           </div>
           <div className="flex items-center gap-2 text-zinc-500 text-xs">
