@@ -52,6 +52,14 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       .order("detected_at", { ascending: false })
       .limit(20);
 
+    const { data: recentTasks } = await supabaseAdmin
+      .from("tasks")
+      .select("id, title, status, priority")
+      .eq("organization_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+
     const tools = actions.map((a) => ({
       type: "function" as const,
       function: {
