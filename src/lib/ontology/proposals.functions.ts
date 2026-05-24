@@ -170,7 +170,7 @@ export const analyzeCsvProposal = createServerFn({ method: "POST" })
       .select()
       .single();
     if (insErr) throw new Error(insErr.message);
-    return { ok: true as const, proposal: inserted, mapping };
+    return { ok: true as const, proposal: inserted, mappingJson: JSON.stringify(mapping) };
   });
 
 export const listProposals = createServerFn({ method: "GET" })
