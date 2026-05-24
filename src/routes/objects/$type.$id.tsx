@@ -1,10 +1,15 @@
+import { useEffect } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Network } from "lucide-react";
 
 import { getObjectGraph } from "@/lib/ontology/graph.functions";
 import { Button } from "@/components/ui/button";
+import { ActionsPanel } from "@/components/ontology/ActionsPanel";
+import { VibeBar } from "@/components/ontology/VibeBar";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/objects/$type/$id")({
   head: ({ params }) => ({
@@ -41,10 +46,31 @@ export const Route = createFileRoute("/objects/$type/$id")({
 function ObjectExplorer() {
   const { type, id } = Route.useParams();
   const fetchGraph = useServerFn(getObjectGraph);
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["object-graph", type, id],
     queryFn: () => fetchGraph({ data: { objectType: type, objectId: id, depth: 1 } }),
   });
+
+  // Realtime: refresh graph when links or alerts change.
+  useEffect(() => {
+    const ch = supabase
+      .channel(`object-${type}-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ontology_object_links" },
+        () => qc.invalidateQueries({ queryKey: ["object-graph", type, id] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ontology_alerts" },
+        () => qc.invalidateQueries({ queryKey: ["object-graph", type, id] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [type, id, qc]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200">
@@ -68,6 +94,9 @@ function ObjectExplorer() {
       </header>
 
       <main className="px-6 py-6 max-w-5xl mx-auto space-y-6">
+        <VibeBar contextObjectId={id} contextObjectType={type} />
+        <ActionsPanel objectType={type} objectId={id} />
+
         {isLoading && (
           <div className="flex items-center gap-2 text-zinc-400">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading graph…

@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Loader2, Radio, RefreshCw, Zap } from "lucide-react";
+import { VibeBar } from "@/components/ontology/VibeBar";
+import { supabase } from "@/integrations/supabase/client";
+
 
 import {
   listActiveAssets,
@@ -129,6 +132,30 @@ function CommandCenter() {
   const dispatchFn = useServerFn(dispatchAction);
   const [now, setNow] = useState(() => new Date());
   const [pending, setPending] = useState<PendingAction | null>(null);
+  const qc = useQueryClient();
+
+  // Realtime: refresh alerts/assets on any backend change.
+  useEffect(() => {
+    const ch = supabase
+      .channel("command-center")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ontology_alerts" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["ontology_alerts"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "action_requests" },
+        () => qc.invalidateQueries({ queryKey: ["ontology_alerts"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [qc]);
+
 
   const alertsQ = useQuery({
     queryKey: ["ontology_alerts"],
@@ -208,6 +235,12 @@ function CommandCenter() {
           </button>
         </div>
       </header>
+
+      {/* Vibe command bar — natural language dispatch */}
+      <section className="border-b border-zinc-800/80 bg-zinc-950 px-6 py-3">
+        <VibeBar placeholder="Vibe: e.g. resolve the latest critical alert" />
+      </section>
+
 
       {/* KPI grid */}
       <section className="grid grid-cols-2 gap-px border-b border-zinc-800/80 bg-zinc-800/80 md:grid-cols-4">
