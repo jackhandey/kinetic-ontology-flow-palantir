@@ -22,6 +22,13 @@ export const Route = createFileRoute("/tasks")({
     meta: [
       { title: "Tasks · AIP Ontology" },
       { name: "description", content: "Self-describing task ontology with dynamic actions." },
+      { property: "og:title", content: "Tasks · AIP Ontology" },
+      { property: "og:description", content: "Self-describing task ontology with dynamic actions." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://kinetic-ontology-flow-palantir.lovable.app/tasks" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://kinetic-ontology-flow-palantir.lovable.app/tasks" },
     ],
   }),
   component: TasksPage,

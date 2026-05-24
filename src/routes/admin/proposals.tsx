@@ -28,6 +28,13 @@ export const Route = createFileRoute("/admin/proposals")({
     meta: [
       { title: "Schema Proposals — Self-Evolving Ontology" },
       { name: "description", content: "Review LLM-generated schema proposals and map incoming CSV data to the ontology." },
+      { property: "og:title", content: "Schema Proposals — Self-Evolving Ontology" },
+      { property: "og:description", content: "Review LLM-generated schema proposals and map incoming CSV data to the ontology." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://kinetic-ontology-flow-palantir.lovable.app/admin/proposals" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://kinetic-ontology-flow-palantir.lovable.app/admin/proposals" },
     ],
   }),
   component: ProposalsPage,
