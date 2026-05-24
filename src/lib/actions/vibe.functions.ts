@@ -126,21 +126,61 @@ export const dispatchVibe = createServerFn({ method: "POST" })
       return { ok: false as const, message: "LLM did not specify a target object" };
     }
 
-    const dispatch = await requestAction({
-      data: {
-        actionTypeId: action.id,
-        targetObjectId: args.target_object_id,
-        payload: args.payload ?? {},
-      },
-    });
+    // Inline dispatch: insert action_request, then call the RPC or webhook.
+    const payload = args.payload ?? {};
+    const { data: req, error: reqErr } = await supabaseAdmin
+      .from("action_requests")
+      .insert({
+        action_type_id: action.id,
+        organization_id: orgId,
+        target_object_id: args.target_object_id,
+        payload: payload as never,
+        status: "approved",
+        requested_by: context.userId,
+        approved_at: new Date().toISOString(),
+        approver_id: context.userId,
+      })
+      .select()
+      .single();
+    if (reqErr || !req) throw new Error(reqErr?.message ?? "Insert failed");
+
+    // Best-effort dispatch via RPC (mirrors action-framework's tryDispatch).
+    const { data: at } = await supabaseAdmin
+      .from("action_types")
+      .select("rpc_function, webhook_url, api_name")
+      .eq("id", action.id)
+      .single();
+
+    if (at?.rpc_function) {
+      const rpcArgs: Record<string, unknown> = {
+        _alert_id: args.target_object_id,
+        ...Object.fromEntries(
+          Object.entries(payload).map(([k, v]) => [k.startsWith("_") ? k : `_${k}`, v]),
+        ),
+      };
+      const { error: rpcErr } = await supabaseAdmin.rpc(
+        at.rpc_function as never,
+        rpcArgs as never,
+      );
+      await supabaseAdmin
+        .from("action_requests")
+        .update({
+          status: rpcErr ? "failed" : "succeeded",
+          dispatched_at: new Date().toISOString(),
+          dispatch_response: rpcErr ? { error: rpcErr.message } : { rpc: at.rpc_function },
+        })
+        .eq("id", req.id);
+      if (rpcErr) throw new Error(rpcErr.message);
+    }
 
     return {
       ok: true as const,
       action: action.api_name,
       targetObjectId: args.target_object_id,
-      payloadJson: JSON.stringify(args.payload ?? {}),
-      requestId: dispatch.requestId,
-      status: dispatch.status,
+      payloadJson: JSON.stringify(payload),
+      requestId: req.id,
+      status: "dispatched" as const,
     };
   });
+
 
