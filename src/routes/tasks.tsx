@@ -142,6 +142,7 @@ function TasksPage() {
           <button
             onClick={() => setBulkIds(new Set())}
             className="ml-auto text-zinc-500 hover:text-zinc-300"
+            aria-label="Clear selection"
           >
             <X className="h-3 w-3" />
           </button>
