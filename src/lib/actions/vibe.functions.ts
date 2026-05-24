@@ -56,8 +56,9 @@ export const dispatchVibe = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("Lovable AI is not configured");
-    const orgId = await getOrgId(context.userId);
-    if (!orgId) throw new Error("No organization");
+    const role = await getOrgRole(context.userId);
+    if (!role) throw new Error("No organization");
+    const orgId = role.orgId;
 
     const { data: actions, error } = await supabaseAdmin
       .from("action_types")
