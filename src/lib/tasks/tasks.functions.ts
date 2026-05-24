@@ -52,3 +52,20 @@ export const createTask = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { task: row };
   });
+
+export const bulkSetTaskStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({
+      ids: z.array(z.string().uuid()).min(1).max(200),
+      status: z.enum(["open", "in_progress", "complete", "blocked"]),
+    }).parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { data: updated, error } = await supabaseAdmin.rpc(
+      "bulk_set_task_status" as never,
+      { _ids: data.ids, _status: data.status } as never,
+    );
+    if (error) throw new Error(error.message);
+    return { updated: (updated as unknown as number) ?? 0 };
+  });
