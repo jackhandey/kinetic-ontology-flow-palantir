@@ -236,10 +236,48 @@ export const rejectAction = createServerFn({ method: "POST" })
 
 async function tryDispatch(
   requestId: string,
-  actionType: { webhook_url: string | null; api_name: string },
+  actionType: { webhook_url: string | null; api_name: string; rpc_function?: string | null },
   targetObjectId: string,
   payload: Record<string, unknown>,
 ) {
+  // Prefer RPC dispatch when configured.
+  if (actionType.rpc_function) {
+    try {
+      const args: Record<string, unknown> = {
+        _alert_id: targetObjectId,
+        ...Object.fromEntries(
+          Object.entries(payload).map(([k, v]) => [k.startsWith("_") ? k : `_${k}`, v]),
+        ),
+      };
+      const { data, error } = await supabaseAdmin.rpc(
+        actionType.rpc_function as never,
+        args as never,
+      );
+      if (error) throw new Error(error.message);
+      await supabaseAdmin
+        .from("action_requests")
+        .update({
+          status: "succeeded",
+          dispatched_at: new Date().toISOString(),
+          dispatch_response: { rpc: actionType.rpc_function, result: data ?? null },
+        })
+        .eq("id", requestId);
+    } catch (err) {
+      await supabaseAdmin
+        .from("action_requests")
+        .update({
+          status: "failed",
+          dispatched_at: new Date().toISOString(),
+          dispatch_response: {
+            rpc: actionType.rpc_function,
+            error: err instanceof Error ? err.message : String(err),
+          },
+        })
+        .eq("id", requestId);
+    }
+    return;
+  }
+
   const url = actionType.webhook_url ?? process.env.N8N_WEBHOOK_URL;
   if (!url) {
     await supabaseAdmin
@@ -275,3 +313,4 @@ async function tryDispatch(
       .eq("id", requestId);
   }
 }
+
