@@ -131,7 +131,7 @@ export const analyzeCsvProposal = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const role = await getOrgRole(context.userId);
-    if (!role) throw new Error("No organization");
+    if (!role || role.role !== "admin") throw new Error("Admin role required");
 
     const { data: existing } = await supabaseAdmin
       .from("ontology_object_types")
