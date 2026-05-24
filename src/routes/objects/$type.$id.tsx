@@ -19,10 +19,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/objects/$type/$id")({
   head: ({ params }) => ({
     meta: [
-      { title: `${params.type} · ${params.id} — Object Explorer` },
+      { title: `${params.type} · ${params.id.slice(0, 8)} — Explorer` },
       {
         name: "description",
-        content: `Relational graph view of ontology object ${params.id} (${params.type}).`,
+        content: `Relational graph view of ontology object ${params.id.slice(0, 8)} (${params.type}).`,
       },
     ],
   }),

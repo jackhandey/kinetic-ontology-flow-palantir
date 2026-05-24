@@ -25,7 +25,10 @@ const RAW_TABLES = [
 
 export const Route = createFileRoute("/admin/proposals")({
   head: () => ({
-    meta: [{ title: "Schema Proposals — Self-Evolving Ontology" }],
+    meta: [
+      { title: "Schema Proposals — Self-Evolving Ontology" },
+      { name: "description", content: "Review LLM-generated schema proposals and map incoming CSV data to the ontology." },
+    ],
   }),
   component: ProposalsPage,
   errorComponent: ({ error, reset }) => {
