@@ -42,8 +42,8 @@ export function VibeBar({
         data: { prompt: value, contextObjectId, contextObjectType },
       }),
     onSuccess: (res) => {
-      const reasoning = "reasoning" in res ? res.reasoning : [];
-      const contextNodeIds = "contextNodeIds" in res ? res.contextNodeIds : [];
+      const reasoning = ("reasoning" in res && res.reasoning) ? res.reasoning : [];
+      const contextNodeIds = ("contextNodeIds" in res && res.contextNodeIds) ? res.contextNodeIds : [];
       setLast({ reasoning, contextNodeIds });
       setShowReasoning(true);
       onHighlightNodes?.(contextNodeIds);
