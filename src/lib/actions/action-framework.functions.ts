@@ -245,6 +245,7 @@ async function tryDispatch(
   // Prefer RPC dispatch when configured.
   if (actionType.rpc_function) {
     try {
+      const allowedRpc = assertAllowedRpc(actionType.rpc_function);
       const args: Record<string, unknown> = {
         _alert_id: targetObjectId,
         ...Object.fromEntries(
@@ -252,7 +253,7 @@ async function tryDispatch(
         ),
       };
       const { data, error } = await supabaseAdmin.rpc(
-        actionType.rpc_function as never,
+        allowedRpc as never,
         args as never,
       );
       if (error) throw new Error(error.message);
@@ -261,7 +262,7 @@ async function tryDispatch(
         .update({
           status: "succeeded",
           dispatched_at: new Date().toISOString(),
-          dispatch_response: { rpc: actionType.rpc_function, result: data ?? null },
+          dispatch_response: { rpc: allowedRpc, result: data ?? null },
         })
         .eq("id", requestId);
     } catch (err) {
