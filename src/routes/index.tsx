@@ -46,6 +46,12 @@ type PendingAction = {
 };
 
 export const Route = createFileRoute("/")({
+  beforeLoad: async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/login" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Operations Command Center — Live Ontology Dashboard" },
