@@ -177,9 +177,21 @@ export const requestAction = createServerFn({ method: "POST" })
     if (atErr || !at) throw new Error("Action type not found");
     if (!at.enabled) throw new Error("Action type is disabled");
 
+    // Fetch authoritative target before any state change.
+    let target: ResolvedTarget;
+    try {
+      target = await resolveTarget(role.orgId, at.target_object_type, data.targetObjectId);
+    } catch (err) {
+      if (err instanceof TargetNotFoundError || err instanceof TargetNotInOrgError) {
+        throw err;
+      }
+      throw err;
+    }
+
     const validationErrors = evalValidation(
       (at.validation_rules as unknown as ValidationRule[]) ?? [],
       data.payload,
+      target.snapshot,
     );
     if (validationErrors.length) {
       throw new Error(`Validation failed: ${validationErrors.join("; ")}`);
@@ -206,8 +218,14 @@ export const requestAction = createServerFn({ method: "POST" })
       .single();
     if (reqErr || !req) throw new Error(reqErr?.message ?? "Insert failed");
 
+    await writeAudit(role.orgId, context.userId, req.id, "requested", {
+      action_type: at.api_name,
+      target: { type: target.type, id: target.id, status: target.status },
+      needs_approval: needsApproval,
+    });
+
     if (!needsApproval) {
-      await tryDispatch(req.id, at, data.targetObjectId, data.payload);
+      await tryDispatch(req.id, at, data.targetObjectId, data.payload, target, role.orgId, context.userId);
     }
 
     return { requestId: req.id, status: needsApproval ? "pending_approval" : "dispatched" };
