@@ -257,11 +257,23 @@ export const approveAction = createServerFn({ method: "POST" })
       })
       .eq("id", req.id);
 
+    // Re-resolve target at approval time — state may have changed.
+    const at = req.action_types as { target_object_type: string; api_name: string; webhook_url: string | null; rpc_function: string | null };
+    const target = await resolveTarget(role.orgId, at.target_object_type, req.target_object_id);
+
+    await writeAudit(role.orgId, context.userId, req.id, "approved", {
+      action_type: at.api_name,
+      target: { type: target.type, id: target.id, status: target.status },
+    });
+
     await tryDispatch(
       req.id,
-      req.action_types as never,
+      at,
       req.target_object_id,
       (req.payload as Record<string, unknown>) ?? {},
+      target,
+      role.orgId,
+      context.userId,
     );
     return { ok: true };
   });
@@ -286,6 +298,9 @@ export const rejectAction = createServerFn({ method: "POST" })
       .eq("organization_id", role.orgId)
       .eq("status", "pending_approval");
     if (error) throw new Error(error.message);
+    await writeAudit(role.orgId, context.userId, data.requestId, "rejected", {
+      reason: data.reason,
+    });
     return { ok: true };
   });
 
@@ -294,6 +309,9 @@ async function tryDispatch(
   actionType: { webhook_url: string | null; api_name: string; rpc_function?: string | null },
   targetObjectId: string,
   payload: Record<string, unknown>,
+  target: ResolvedTarget,
+  orgId: string,
+  actorId: string,
 ) {
   // Prefer RPC dispatch when configured.
   if (actionType.rpc_function) {
@@ -318,18 +336,25 @@ async function tryDispatch(
           dispatch_response: { rpc: allowedRpc, result: data ?? null },
         })
         .eq("id", requestId);
+      await writeAudit(orgId, actorId, requestId, "dispatched", {
+        action_type: actionType.api_name,
+        rpc: allowedRpc,
+      });
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       await supabaseAdmin
         .from("action_requests")
         .update({
           status: "failed",
           dispatched_at: new Date().toISOString(),
-          dispatch_response: {
-            rpc: actionType.rpc_function,
-            error: err instanceof Error ? err.message : String(err),
-          },
+          dispatch_response: { rpc: actionType.rpc_function, error: msg },
         })
         .eq("id", requestId);
+      await writeAudit(orgId, actorId, requestId, "failed", {
+        action_type: actionType.api_name,
+        rpc: actionType.rpc_function,
+        error: msg,
+      });
     }
     return;
   }
@@ -340,12 +365,20 @@ async function tryDispatch(
       .from("action_requests")
       .update({ status: "failed", dispatch_response: { error: "no webhook configured" } })
       .eq("id", requestId);
+    await writeAudit(orgId, actorId, requestId, "failed", {
+      action_type: actionType.api_name,
+      error: "no webhook configured",
+    });
     return;
   }
   try {
     const res = await dispatchWebhook(url, {
+      request_id: requestId,
       action_type: actionType.api_name,
       object_id: targetObjectId,
+      organization_id: orgId,
+      requested_by: actorId,
+      target: { type: target.type, id: target.id, status: target.status, snapshot: target.snapshot },
       payload,
       requested_at: new Date().toISOString(),
     });
@@ -358,15 +391,25 @@ async function tryDispatch(
         dispatch_response: { status: res.status, body: res.body },
       })
       .eq("id", requestId);
+    await writeAudit(orgId, actorId, requestId, ok ? "dispatched" : "failed", {
+      action_type: actionType.api_name,
+      status: res.status,
+    });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     await supabaseAdmin
       .from("action_requests")
       .update({
         status: "failed",
         dispatched_at: new Date().toISOString(),
-        dispatch_response: { error: err instanceof Error ? err.message : String(err) },
+        dispatch_response: { error: msg },
       })
       .eq("id", requestId);
+    await writeAudit(orgId, actorId, requestId, "failed", {
+      action_type: actionType.api_name,
+      error: msg,
+    });
   }
 }
+
 
