@@ -8,6 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const DispatchActionInputSchema = z.object({
   objectId: z.string().min(1).max(255),
@@ -30,11 +31,23 @@ export const dispatchAction = createServerFn({ method: "POST" })
       throw new Error("N8N_WEBHOOK_URL is not configured");
     }
 
+    // Resolve the caller's org membership. Without an org the user has no
+    // authority to dispatch actions in any tenant scope.
+    const { data: roleRow, error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .select("organization_id")
+      .eq("user_id", context.userId)
+      .limit(1)
+      .maybeSingle();
+    if (roleErr) throw new Error(roleErr.message);
+    if (!roleRow) throw new Error("No organization membership for caller");
+    const orgId = roleRow.organization_id;
+
     const payload = {
       object_id: data.objectId,
       action_type: data.actionType,
       object_kind: data.objectKind,
-      organization_id: context.userId, // org scope is implicit via caller
+      organization_id: orgId,
       dispatched_by: context.userId,
       dispatched_at: new Date().toISOString(),
       context: data.context ?? {},
