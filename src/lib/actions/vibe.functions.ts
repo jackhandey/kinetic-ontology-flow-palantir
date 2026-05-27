@@ -7,6 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertAllowedRpc } from "./rpc-allowlist";
 // Inline dispatch to avoid server-fn-to-server-fn auth loss.
 
 async function getOrgRole(userId: string): Promise<{ orgId: string; role: string } | null> {
@@ -290,6 +291,7 @@ export const dispatchVibe = createServerFn({ method: "POST" })
 
     // Dispatch via RPC if configured, otherwise via webhook.
     if (at.rpc_function) {
+      const allowedRpc = assertAllowedRpc(at.rpc_function);
       const rpcArgs: Record<string, unknown> = {
         _alert_id: args.target_object_id,
         ...Object.fromEntries(
@@ -297,7 +299,7 @@ export const dispatchVibe = createServerFn({ method: "POST" })
         ),
       };
       const { error: rpcErr } = await supabaseAdmin.rpc(
-        at.rpc_function as never,
+        allowedRpc as never,
         rpcArgs as never,
       );
       await supabaseAdmin
