@@ -12,11 +12,18 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { ensureOrgBootstrap } from "@/lib/ontology/bootstrap.server";
 import { assertAllowedRpc } from "./rpc-allowlist";
+import {
+  resolveTarget,
+  TargetNotFoundError,
+  TargetNotInOrgError,
+  type ResolvedTarget,
+} from "./target-resolver.server";
 
 
 type ValidationRule = {
+  scope?: "payload" | "target";
   field: string;
-  op: "required" | "min" | "max" | "regex";
+  op: "required" | "min" | "max" | "regex" | "eq" | "neq";
   value?: unknown;
 };
 type ApprovalRule = {
@@ -24,6 +31,23 @@ type ApprovalRule = {
   op: ">" | ">=" | "<" | "<=" | "==";
   value: number | string | boolean;
 };
+
+async function writeAudit(
+  orgId: string,
+  actorId: string | null,
+  requestId: string,
+  action: string,
+  diff: Record<string, unknown>,
+) {
+  await supabaseAdmin.from("audit_log").insert({
+    organization_id: orgId,
+    object_type: "action_request",
+    object_id: requestId,
+    actor_id: actorId,
+    action,
+    diff: diff as never,
+  });
+}
 
 async function getOrgIdAndRole(userId: string) {
   const { data } = await supabaseAdmin
