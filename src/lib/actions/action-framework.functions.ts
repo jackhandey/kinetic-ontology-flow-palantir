@@ -11,6 +11,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { ensureOrgBootstrap } from "@/lib/ontology/bootstrap.server";
+import { assertAllowedRpc } from "./rpc-allowlist";
+
 
 type ValidationRule = {
   field: string;
