@@ -66,18 +66,29 @@ function getField(obj: Record<string, unknown>, path: string): unknown {
   );
 }
 
-function evalValidation(rules: ValidationRule[], payload: Record<string, unknown>): string[] {
+function evalValidation(
+  rules: ValidationRule[],
+  payload: Record<string, unknown>,
+  target: Record<string, unknown>,
+): string[] {
   const errors: string[] = [];
   for (const r of rules) {
-    const v = getField(payload, r.field);
+    const scope = r.scope ?? "payload";
+    const source = scope === "target" ? target : payload;
+    const v = getField(source, r.field);
+    const label = `${scope}.${r.field}`;
     if (r.op === "required" && (v === undefined || v === null || v === "")) {
-      errors.push(`${r.field} is required`);
+      errors.push(`${label} is required`);
     } else if (r.op === "min" && typeof v === "number" && typeof r.value === "number" && v < r.value) {
-      errors.push(`${r.field} must be >= ${r.value}`);
+      errors.push(`${label} must be >= ${r.value}`);
     } else if (r.op === "max" && typeof v === "number" && typeof r.value === "number" && v > r.value) {
-      errors.push(`${r.field} must be <= ${r.value}`);
+      errors.push(`${label} must be <= ${r.value}`);
     } else if (r.op === "regex" && typeof v === "string" && typeof r.value === "string") {
-      if (!new RegExp(r.value).test(v)) errors.push(`${r.field} format invalid`);
+      if (!new RegExp(r.value).test(v)) errors.push(`${label} format invalid`);
+    } else if (r.op === "eq" && v !== r.value) {
+      errors.push(`${label} must equal ${String(r.value)}`);
+    } else if (r.op === "neq" && v === r.value) {
+      errors.push(`${label} must not equal ${String(r.value)}`);
     }
   }
   return errors;
