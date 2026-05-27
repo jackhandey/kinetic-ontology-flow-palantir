@@ -291,6 +291,7 @@ export const dispatchVibe = createServerFn({ method: "POST" })
 
     // Dispatch via RPC if configured, otherwise via webhook.
     if (at.rpc_function) {
+      const allowedRpc = assertAllowedRpc(at.rpc_function);
       const rpcArgs: Record<string, unknown> = {
         _alert_id: args.target_object_id,
         ...Object.fromEntries(
@@ -298,7 +299,7 @@ export const dispatchVibe = createServerFn({ method: "POST" })
         ),
       };
       const { error: rpcErr } = await supabaseAdmin.rpc(
-        at.rpc_function as never,
+        allowedRpc as never,
         rpcArgs as never,
       );
       await supabaseAdmin
